@@ -5,6 +5,7 @@ dev/
 docs/
 dist/test/
 .npmignore
+/node_modules/
 
 // npm pack
 zion-parser-*.tgz
