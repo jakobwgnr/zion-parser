@@ -17,7 +17,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
+    "version": "npm run format && git add -A dev",
     "postversion": "git push && git push --tags",
     "typedoc": "typedoc --out ./docs --mode modules --tsconfig ./tsconfig.json ./dev/src/",
     "posttypedoc": "shx cp .nojekyll docs/.nojekyll"
