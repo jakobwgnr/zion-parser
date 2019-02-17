@@ -2,10 +2,21 @@
   "name": "zion-parser",
   "version": "0.0.1",
   "description": "A parser/Lexer for COBOL creating an AST",
-  "main": "./bin/index.ts",
+  "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --config jestconfig.json",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
+  "files": [
+    "lib/**/*"
+  ],
   "keywords": [
     "parser",
     "lexer",
@@ -15,11 +26,11 @@
   "author": "Jakob Wagner",
   "license": "ISC",
   "devDependencies": {
-    "eslint": "^5.14.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.16.0"
-  },
-  "dependencies": {
+    "@types/jest": "^24.0.5",
+    "prettier": "^1.16.4",
+    "ts-jest": "^23.10.5",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.3.3"
   },
   "repository": {
