@@ -16,30 +16,30 @@ install:
 
 script:
   - npm run lint
-  - npm run test-only
+#  - npm run test-only
 
 after_success:
   - npm run typedoc
   - npm pack
 
 
-#deploy:
-#  - provider: pages
-#   skip_cleanup: true
-#    local_dir: docs/
-#    github_token: ed2a04ad82f9c8b5137129480c0483bbedf8269d
-#    on:
-#      tags: true
-#  - provider: releases
-#    api_key: ed2a04ad82f9c8b5137129480c0483bbedf8269d
-#    file_glob: true
-#    file: "zion-parser-*.tgz"
-#    skip_cleanup: true
-#    on:
-#      tags: true
-#  - provider: npm
-#    skip_cleanup: true
-#    email: "jaykob.wagner@gmail.com"
-#    api_key: cfe0c4c1-6e67-4ef3-88d2-98441af5b5ac
-#    on:
-#      tags: true
+deploy:
+  - provider: pages
+  skip_cleanup: true
+    local_dir: docs/
+    github_token: ed2a04ad82f9c8b5137129480c0483bbedf8269d
+    on:
+      tags: true
+  - provider: releases
+    api_key: ed2a04ad82f9c8b5137129480c0483bbedf8269d
+    file_glob: true
+    file: "zion-parser-*.tgz"
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: npm
+    skip_cleanup: true
+    email: "jaykob.wagner@gmail.com"
+    api_key: cfe0c4c1-6e67-4ef3-88d2-98441af5b5ac
+    on:
+      tags: true
