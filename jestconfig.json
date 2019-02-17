@@ -11,5 +11,5 @@
         "json",
         "node"
     ],
-    "collectCoverage": true
+    "collectCoverage": false
 }
