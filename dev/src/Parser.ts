@@ -16,8 +16,7 @@
 // ------------------------------------------------------------------------------
 
 export class Parser {
-
-    public execute(tokens: string) {
-        return tokens;
-    }
+  public execute(tokens: string) {
+    return tokens;
+  }
 }
