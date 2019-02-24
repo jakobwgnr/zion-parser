@@ -6,23 +6,70 @@
 // ------------------------------------------------------------------------------
 // Requirements
 // ------------------------------------------------------------------------------
+import * as fs from 'fs';
+import * as fscheck from './util/fscheck';
 import { Lexer } from './Lexer';
+import { Options } from './Options';
 import { Parser } from './Parser';
+import * as path from 'path';
+
 
 // ------------------------------------------------------------------------------
 // Public Interface
 // ------------------------------------------------------------------------------
 
-export function parse(code: string) {
-  const lexer = new Lexer(code);
-  const parser = new Parser();
-  const tokens = lexer.execute();
+export function parse(input: string, options?: Options) {
+  if (!options) {
+    options = new Options();
+  }
 
-  return parser.execute(tokens);
+  if (options.fromPath) {
+    if (fscheck.isFile(input)) {
+      fs.readFile(input, 'utf8', (error, data) => {
+        const lexer = new Lexer(data);
+        const parser = new Parser();
+        const tokens = lexer.execute();
+
+        return parser.execute(tokens);
+      })
+    } else {
+      throw new Error('Not a file');
+    }
+  } else {
+    const lexer = new Lexer(input);
+    const parser = new Parser();
+    const tokens = lexer.execute();
+
+    return parser.execute(tokens);
+  }
 }
 
-export function lex(code: string) {
-  const lexer = new Lexer(code);
+export function lex(input: string, options?: Options) {
+  if (!options) {
+    options = new Options();
+  }
+  let code: string;
 
+  if (options.fromPath) {
+    code = codeFromPath(input);
+  } else {
+    code = input;
+  }
+
+  const lexer = new Lexer(code);
   return lexer.execute();
+}
+
+function codeFromPath(filePath: string): string {
+  let code: string = "";
+
+  if (fscheck.isFile(path.join(__dirname, filePath))) {
+    code = fs.readFileSync(path.join(__dirname, filePath), 'utf8')
+  } else {
+    throw new Error('Not a file');
+  }
+
+  console.log(code);
+  return code;
+
 }
