@@ -8,9 +8,11 @@
 // ------------------------------------------------------------------------------
 import * as fs from 'fs';
 import * as fscheck from './util/fscheck';
+
 import { Lexer } from './Lexer';
 import { Options } from './Options';
 import { Parser } from './Parser';
+
 import * as path from 'path';
 
 
@@ -61,15 +63,10 @@ export function lex(input: string, options?: Options) {
 }
 
 function codeFromPath(filePath: string): string {
-  let code: string = "";
-
   if (fscheck.isFile(path.join(__dirname, filePath))) {
-    code = fs.readFileSync(path.join(__dirname, filePath), 'utf8')
+    return fs.readFileSync(path.join(__dirname, filePath), 'utf8')
   } else {
     throw new Error('Not a file');
   }
-
-  console.log(code);
-  return code;
 
 }

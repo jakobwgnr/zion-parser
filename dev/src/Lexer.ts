@@ -7,6 +7,8 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
+import { Character } from "./character";
+import { SourceCode } from "./Sourcecode";
 import { Token } from "./Token";
 
 // ------------------------------------------------------------------------------
@@ -18,105 +20,83 @@ import { Token } from "./Token";
 // ------------------------------------------------------------------------------
 
 export class Lexer {
-  private readonly sourcecode: string;
+  private readonly sourcecode: SourceCode;
   private chars: string = "";
-  private currentLine: number = 1;
-  private currentColumnTotal: number = 1;
-  private currentColumnRelative: number = 1;
   private tokenIdentified: boolean = false;
   private token: Token = new Token();
   private tokenList: Token[] = [];
 
-  constructor(sourcecode: string) {
-    this.sourcecode = sourcecode;
+  constructor(code: string) {
+    this.sourcecode = new SourceCode(code);
   }
 
   public execute() {
 
-    for (const currentChar of this.sourcecode) {
+    while (!this.sourcecode.eof()) {
 
-      this.categorizeCurrentChar(currentChar);
-
-      /* line counter - Also resets currentColumnRelative */
-      if (this.chars === "\r\n") {
-        this.currentColumnRelative = 1;
-        this.currentLine++;
+      if (Character.isLineTerminator(this.sourcecode.getCurrentChar())) {
+        // TODO: currently I think no multiline tokens in COBOL...
+        if (this.tokenIdentified) {
+          this.tokenEnded();
+        }
+        this.sourcecode.NextChar();
       }
 
-      /* Don't count escape chars as char column*/
-      if (currentChar !== "\r" && currentChar !== "\n") {
-        this.currentColumnTotal++;
-        this.currentColumnRelative++;
-      }
+      this.identifyToken(this.sourcecode.getCurrentChar());
+      this.sourcecode.NextChar();
 
     }
 
-    // EOF
+    // write last token if identified
     if (this.tokenIdentified) {
       this.tokenEnded();
     }
+
+    this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
+
 
     return this.tokenList;
 
   }
 
-  private categorizeCurrentChar(currentChar: string) {
-    switch (currentChar) {
-      case " ": {
-        if (this.tokenIdentified) {
-          if (this.token.type === 'Comment' || this.token.type === 'String') {
-            // just a char within the comment/string --> include
-            this.chars = this.chars.concat(currentChar);
-          } else {
-            // a token has ended
-            this.tokenEnded();
-          }
-        } else {
-          // do nothing - just skip the character 
-        }
-        break;
-      }
+  private identifyToken(currentChar: string) {
 
-      case "*": {
-        if (!this.tokenIdentified && this.currentColumnRelative === 7) {
-          this.tokenStart('Comment');
-        } else {
+    if (currentChar === " ") {
+      if (this.tokenIdentified) {
+        if (this.token.type === 'Comment' || this.token.type === 'String') {
+          // just a char within the comment/string --> include
           this.chars = this.chars.concat(currentChar);
-        }
-        break;
-      }
-      case "\r":
-      case "\n": {
-        if (this.tokenIdentified) {
+        } else {
+          // a token has ended
           this.tokenEnded();
-          this.chars = currentChar;
-        } else {
-          this.chars = this.chars.concat(currentChar);
         }
-        break;
+      } else {
+        // do nothing - just skip the character 
       }
-      default: {
+    } else {
+      if (currentChar === "*" && !this.tokenIdentified && this.sourcecode.currentColumnRelative === 7) {
+        this.tokenStart('Comment');
+      } else {
         this.chars = this.chars.concat(currentChar);
-        break;
       }
-
-
     }
   }
 
   private tokenStart(tokenType: string) {
     this.tokenIdentified = true;
 
-    this.token.startColumnRelative = this.currentColumnRelative;
-    this.token.startColumnTotal = this.currentColumnTotal;
-    this.token.startLine = this.currentLine;
+    this.token.startColumnRelative = this.sourcecode.currentColumnRelative;
+    this.token.startColumnTotal = this.sourcecode.columnsTotal;
+    this.token.startLine = this.sourcecode.currentLine;
     this.token.type = tokenType;
   }
   private tokenEnded() {
     this.token.value = this.chars;
-    this.token.endLine = this.currentLine;
-    this.token.endColumnRelative = this.currentColumnRelative;
-    this.token.endColumnTotal = this.currentColumnTotal;
+    this.token.endLine = this.sourcecode.currentLine;
+    this.token.endColumnRelative = this.sourcecode.currentColumnRelative;
+    this.token.endColumnTotal = this.sourcecode.columnsTotal;
+
+    this.chars = "";
 
     const insertToken: Token = new Token();
     insertToken.type = this.token.type;

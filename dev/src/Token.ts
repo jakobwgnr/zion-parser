@@ -25,6 +25,34 @@ export class Token {
     public endColumnRelative: number = 0;
     public endLine: number = 0;
 
+    constructor(value?: string, type?: string, startColumnTotal?: number, startColumnRelative?: number
+        , startLine?: number, endColumnTotal?: number, endColumnRelative?: number, endLine?: number) {
+        if (value) {
+            this.value = value;
+        }
+        if (type) {
+            this.type = type;
+        }
+        if (startColumnTotal) {
+            this.startColumnTotal = startColumnTotal;
+        }
+        if (startColumnRelative) {
+            this.startColumnRelative = startColumnRelative;
+        }
+        if (startLine) {
+            this.startLine = startLine;
+        }
+        if (endColumnTotal) {
+            this.endColumnTotal = endColumnTotal;
+        }
+        if (endColumnRelative) {
+            this.endColumnRelative = endColumnRelative;
+        }
+        if (endLine) {
+            this.endLine = endLine;
+        }
+    }
+
     public initToken() {
         this.value = "";
         this.type = "";
