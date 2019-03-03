@@ -6,7 +6,7 @@ test('Check if Lexer identifies a comment', () => {
 
   const tokenList: Token[] = lexer.execute();
   expect(tokenList[0].type).toBe('Comment');
-  expect(tokenList[0].value).toBe(' This is a comment');
+  expect(tokenList[0].value).toBe('* This is a comment');
   expect(tokenList[0].startLine).toBe(1);
   expect(tokenList[0].endLine).toBe(1);
   expect(tokenList[0].startColumnRelative).toBe(7);
@@ -20,7 +20,7 @@ test('Check if Lexer identifies 2 comments', () => {
 
   const tokenList: Token[] = lexer.execute();
   expect(tokenList[0].type).toBe('Comment');
-  expect(tokenList[0].value).toBe(' This is the first comment');
+  expect(tokenList[0].value).toBe('* This is the first comment');
   expect(tokenList[0].startLine).toBe(1);
   expect(tokenList[0].endLine).toBe(1);
   expect(tokenList[0].startColumnRelative).toBe(7);

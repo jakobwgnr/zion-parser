@@ -44,20 +44,17 @@ export const Character = {
 
     isIdentifierStart(char: string): boolean {
         const cp: number = char.charCodeAt(0);
-        return (cp === 0x24) || (cp === 0x5F) ||  // $ (dollar) and _ (underscore)
-            (cp >= 0x41 && cp <= 0x5A) ||         // A..Z
+        return (cp >= 0x41 && cp <= 0x5A) ||         // A..Z
             (cp >= 0x61 && cp <= 0x7A) ||         // a..z
-            (cp === 0x5C) ||                      // \ (backslash)
             ((cp >= 0x80) && Regex.NonAsciiIdentifierStart.test(Character.fromCodePoint(cp)));
     },
 
     isIdentifierPart(char: string): boolean {
         const cp: number = char.charCodeAt(0);
-        return (cp === 0x24) || (cp === 0x5F) ||  // $ (dollar) and _ (underscore)
-            (cp >= 0x41 && cp <= 0x5A) ||         // A..Z
+        return (cp >= 0x41 && cp <= 0x5A) ||         // A..Z
             (cp >= 0x61 && cp <= 0x7A) ||         // a..z
             (cp >= 0x30 && cp <= 0x39) ||         // 0..9
-            (cp === 0x5C) ||                      // \ (backslash)
+            (cp === 0x20) ||                      // '_' (SPACE)
             ((cp >= 0x80) && Regex.NonAsciiIdentifierPart.test(Character.fromCodePoint(cp)));
     },
 

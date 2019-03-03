@@ -18,5 +18,5 @@ test('Zion-Parser.lex takes a path as input', () => {
     expect(tokenList[0].type).toBe('Comment');
 })
 
-// TODO Tests for Parser
+// TODO: Tests for Parser
 

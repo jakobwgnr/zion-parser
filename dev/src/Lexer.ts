@@ -22,7 +22,6 @@ import { Token } from "./Token";
 export class Lexer {
   private readonly sourcecode: SourceCode;
   private chars: string = "";
-  private tokenIdentified: boolean = false;
   private token: Token = new Token();
   private tokenList: Token[] = [];
 
@@ -33,23 +32,9 @@ export class Lexer {
   public execute() {
 
     while (!this.sourcecode.eof()) {
-
-      if (Character.isLineTerminator(this.sourcecode.getCurrentChar())) {
-        // TODO: currently I think no multiline tokens in COBOL...
-        if (this.tokenIdentified) {
-          this.tokenEnded();
-        }
-        this.sourcecode.NextChar();
-      }
-
       this.identifyToken(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
 
-    }
-
-    // write last token if identified
-    if (this.tokenIdentified) {
-      this.tokenEnded();
     }
 
     this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
@@ -62,33 +47,46 @@ export class Lexer {
   private identifyToken(currentChar: string) {
 
     if (currentChar === " ") {
-      if (this.tokenIdentified) {
-        if (this.token.type === 'Comment' || this.token.type === 'String') {
-          // just a char within the comment/string --> include
-          this.chars = this.chars.concat(currentChar);
-        } else {
-          // a token has ended
-          this.tokenEnded();
-        }
-      } else {
-        // do nothing - just skip the character 
-      }
+      // do nothing - just skip the Space - Not within a Token 
     } else {
-      if (currentChar === "*" && !this.tokenIdentified && this.sourcecode.currentColumnRelative === 7) {
-        this.tokenStart('Comment');
+      // Comment Token
+      if (currentChar === "*" && this.sourcecode.currentColumnRelative === 7) {
+        this.tokenStart();
+        this.token.type = "Comment";
+
+        while (!Character.isLineTerminator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
+          this.chars = this.chars.concat(this.sourcecode.getCurrentChar());
+          this.sourcecode.NextChar();
+        }
+
+        this.tokenEnded();
+
       } else {
+        if (Character.isIdentifierStart(currentChar)) {
+          this.tokenStart();
+
+          while (Character.isIdentifierPart(currentChar)) {
+            this.chars = this.chars.concat(currentChar);
+          }
+
+          if (this.isKeyword(this.chars)) {
+            this.token.type = "Keyword";
+          } else {
+            this.token.type = "Value";
+          }
+
+          this.tokenEnded();
+
+        }
         this.chars = this.chars.concat(currentChar);
       }
     }
   }
 
-  private tokenStart(tokenType: string) {
-    this.tokenIdentified = true;
-
+  private tokenStart() {
     this.token.startColumnRelative = this.sourcecode.currentColumnRelative;
     this.token.startColumnTotal = this.sourcecode.columnsTotal;
     this.token.startLine = this.sourcecode.currentLine;
-    this.token.type = tokenType;
   }
   private tokenEnded() {
     this.token.value = this.chars;
@@ -111,6 +109,10 @@ export class Lexer {
     this.tokenList.push(insertToken);
 
     this.token.initToken();
-    this.tokenIdentified = false;
+  }
+
+  private isKeyword(word: string) {
+    // TODO: Implement
+    return false;
   }
 }
