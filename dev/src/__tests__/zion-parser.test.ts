@@ -18,5 +18,10 @@ test('Zion-Parser.lex takes a path as input', () => {
     expect(tokenList[0].type).toBe('Comment');
 })
 
+test('Zion-Parser.lex able to lex a complete COBOL program', () => {
+    const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/comment.cbl')
+    expect(tokenList[0].type).toBe('Comment');
+})
+
 // TODO: Tests for Parser
 
