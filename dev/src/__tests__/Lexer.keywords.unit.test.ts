@@ -16,9 +16,9 @@ test('Check if Lexer can destinguish between keyword and value', () => {
     const lexer = new Lexer('       PROGRAM-ID.    QC1CDPL.');
 
     const tokenList: Token[] = lexer.execute();
-    expect(tokenList[0].type).toBe('Keyword');
+    expect(tokenList[0].type).toBe("Keyword");
     expect(tokenList[0].value).toBe('PROGRAM-ID');
 
-    expect(tokenList[1].type).toBe('Value');
+    expect(tokenList[1].type).toBe("Identifier");
     expect(tokenList[1].value).toBe('QC1CDPL');
 });

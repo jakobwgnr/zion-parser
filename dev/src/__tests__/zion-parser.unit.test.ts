@@ -10,18 +10,18 @@ test('Zion-Parser.lex throws error on no such file', () => {
 
 test('Zion-Parser.lex takes a String stdin as input', () => {
     const tokenList: Token[] = zionParser.lex('      * This is a comment', new Options(false))
-    expect(tokenList[0].type).toBe('Comment');
+    expect(tokenList[0].type).toBe("Comment");
 });
 
 test('Zion-Parser.lex takes a path as input', () => {
     const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/comment.cbl')
-    expect(tokenList[0].type).toBe('Comment');
+    expect(tokenList[0].type).toBe("Comment");
 });
 
 describe('mock', () => {
     test('Zion-Parser.lex able to lex a complete COBOL program', () => {
         const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/QC1CDPL.cbl')
-        expect(tokenList[0].type).toBe('Comment');
+        expect(tokenList[0].type).toBe("SequenceNumberLiteral");
 
         const fs = require('fs');
 

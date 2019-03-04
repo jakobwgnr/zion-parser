@@ -42,24 +42,15 @@ export const Character = {
 
     // https://tc39.github.io/ecma262/#sec-names-and-keywords
 
-    isIdentifierStart(char: string): boolean {
-        const cp: number = char.charCodeAt(0);
-        return (cp >= 0x41 && cp <= 0x5A) ||      // A..Z
-            (cp >= 0x61 && cp <= 0x7A) ||         // a..z
-            ((cp >= 0x80) && Regex.NonAsciiIdentifierStart.test(Character.fromCodePoint(cp)));
-    },
-
-    isIdentifierPart(char: string): boolean {
+    isCobolWordStart(char: string): boolean {
         const cp: number = char.charCodeAt(0);
         return (cp >= 0x41 && cp <= 0x5A) ||      // A..Z
             (cp >= 0x61 && cp <= 0x7A) ||         // a..z
             (cp >= 0x30 && cp <= 0x39) ||         // 0..9
-            (cp === 0x2D) ||                      // - (Dash)
-            ((cp >= 0x80) && Regex.NonAsciiIdentifierPart.test(Character.fromCodePoint(cp)));
+            ((cp >= 0x80) && Regex.NonAsciiIdentifierStart.test(Character.fromCodePoint(cp)));
     },
 
-
-    isKeywordPart(char: string): boolean {
+    isCobolWordPart(char: string): boolean {
         const cp: number = char.charCodeAt(0);
         return (cp >= 0x41 && cp <= 0x5A) ||      // A..Z
             (cp >= 0x61 && cp <= 0x7A) ||         // a..z
@@ -69,15 +60,22 @@ export const Character = {
     },
 
     isLevelIndicator(char: string): boolean {
-        const cp1: number = char.charCodeAt(0);
-        const cp2: number = char.charCodeAt(1);
-        return (char.length === 2) && (
-            ((cp1 >= 0x30 && cp1 <= 0x34)        // 0..4
-                && (cp2 >= 0x30 && cp2 <= 0x39))     // 0..9
-            || (cp1 === 0x36 && cp2 === 0x36)    // Level 66    
-            || (cp1 === 0x37 && cp2 === 0x37)    // Level 77    
-            || (cp1 === 0x38 && cp2 === 0x38))   // Level 88    
-            ;
+        if (char.length === 1) {
+            const cp1: number = char.charCodeAt(0);
+            return (cp1 >= 0x30 && cp1 <= 0x39);   // 0..9
+        } else {
+            if (char.length === 2) {
+                const cp1: number = char.charCodeAt(0);
+                const cp2: number = char.charCodeAt(1);
+                return ((cp1 >= 0x30 && cp1 <= 0x34)        // 0..4
+                    && (cp2 >= 0x30 && cp2 <= 0x39))     // 0..9
+                    || (cp1 === 0x36 && cp2 === 0x36)    // Level 66    
+                    || (cp1 === 0x37 && cp2 === 0x37)    // Level 77    
+                    || (cp1 === 0x38 && cp2 === 0x38);   // Level 88  
+            } else {
+                return false;
+            }
+        }
     },
 
     isNumberIndicator(char: string): boolean {
@@ -103,6 +101,10 @@ export const Character = {
     isDecimalDigit(char: string): boolean {
         const cp: number = char.charCodeAt(0);
         return (cp >= 0x30 && cp <= 0x39);      // 0..9
+    },
+
+    isNumeric(char: string): boolean {
+        return !isNaN(Number(char));
     },
 
     isHexDigit(char: string): boolean {
