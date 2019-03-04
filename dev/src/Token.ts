@@ -63,4 +63,16 @@ export class Token {
         this.endColumnRelative = 0;
         this.endLine = 0;
     }
+
+    public toString = (): string => {
+        return `Token (type: ${this.type},
+            value: ${this.value},
+            startColumnTotal: ${this.startColumnTotal},
+            endColumnTotal: ${this.endColumnTotal},
+            startColumnRelative: ${this.startColumnRelative},
+            endColumnRelative: ${this.endColumnRelative},
+            startLine: ${this.startLine},
+            endLine: ${this.endLine})
+            \r\n`;
+    }
 }

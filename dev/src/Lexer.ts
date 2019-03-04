@@ -22,7 +22,6 @@ import { Token } from "./Token";
 
 export class Lexer {
   private readonly sourcecode: SourceCode;
-  private chars: string = "";
   private token: Token = new Token();
   private tokenList: Token[] = [];
 
@@ -49,12 +48,12 @@ export class Lexer {
       // do nothing - just skip the Space - Not within a Token 
     } else {
       // Comment Token
-      if (this.sourcecode.getCurrentChar() === "*" && this.sourcecode.currentColumnRelative === 7) {
+      if (this.sourcecode.getCurrentChar() === ("*" || "/") && this.sourcecode.currentColumnRelative === 7) {
         this.tokenStart();
         this.token.type = "Comment";
 
         while (!Character.isLineTerminator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
-          this.chars = this.chars.concat(this.sourcecode.getCurrentChar());
+          this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
           this.sourcecode.NextChar();
         }
 
@@ -62,24 +61,82 @@ export class Lexer {
 
       } else {
         if (Character.isIdentifierStart(this.sourcecode.getCurrentChar())) {
+          // Could be Keyword or Value
           this.tokenStart();
 
           while (Character.isKeywordPart(this.sourcecode.getCurrentChar())) {
-            this.chars = this.chars.concat(this.sourcecode.getCurrentChar());
+            this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
             this.sourcecode.NextChar();
           }
 
-          if (Keyword.isKeyword(this.chars)) {
-            this.token.type = "Keyword";
-          } else {
-            this.token.type = "Value";
-            while (Character.isIdentifierPart(this.sourcecode.getCurrentChar())) {
-              this.chars = this.chars.concat(this.sourcecode.getCurrentChar());
+          if (Character.isBracket(this.sourcecode.getCurrentChar()) && this.token.value.length <= 2) {
+            if (this.token.value === "X") {
+              this.token.type = "PICAlfaNumeric";
+            } else {
+              this.token.type = "PICNumeric";
+            }
+            do {
+              this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
               this.sourcecode.NextChar();
+
+            } while (!Character.isBracket(this.sourcecode.getCurrentChar()))
+            this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+          } else {
+
+            if (Keyword.isKeyword(this.token.value)) {
+              this.token.type = "Keyword";
+            } else {
+              this.token.type = "Value";
+              while (Character.isIdentifierPart(this.sourcecode.getCurrentChar())) {
+                this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+                this.sourcecode.NextChar();
+              }
             }
           }
           this.tokenEnded();
+        } else {
+          if (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
+            // Could be Level indicator or just normal decimal value
+            this.tokenStart();
+            while (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
+              this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+              this.sourcecode.NextChar();
+            }
+
+            if (Character.isLevelIndicator(this.token.value)) {
+              this.token.type = "Level";
+            } else {
+              this.token.type = "Number";
+            }
+            this.tokenEnded();
+          } else {
+            if (Character.isNumberIndicator(this.sourcecode.getCurrentChar())) {
+              // is a Decimal value
+              this.tokenStart();
+              this.token.type = "Number";
+              while (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
+                this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+                this.sourcecode.NextChar();
+              }
+              this.tokenEnded();
+            } else {
+              if (Character.isStringIndicator(this.sourcecode.getCurrentChar())) {
+                // is a String value
+                this.tokenStart();
+                this.token.type = "String";
+                do {
+                  this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+                  this.sourcecode.NextChar();
+                } while (!Character.isStringIndicator(this.sourcecode.getCurrentChar()))
+
+                // Still add the Indicator to the chars value - TODO: Is there a better solution?
+                this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+                this.tokenEnded();
+              }
+            }
+          }
         }
+
       }
     }
   }
@@ -90,12 +147,9 @@ export class Lexer {
     this.token.startLine = this.sourcecode.currentLine;
   }
   private tokenEnded() {
-    this.token.value = this.chars;
     this.token.endLine = this.sourcecode.currentLine;
     this.token.endColumnRelative = this.sourcecode.currentColumnRelative;
     this.token.endColumnTotal = this.sourcecode.columnsTotal;
-
-    this.chars = "";
 
     const insertToken: Token = new Token();
     insertToken.type = this.token.type;

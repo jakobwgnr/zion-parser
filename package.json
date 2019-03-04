@@ -11,6 +11,8 @@
     "pretest": "npm run build",
     "test-only": "jest --config jestconfig.json",
     "test": "jest --config jestconfig.json",
+    "mocktest": "npm run build && jest --config jestconfig.json -t mock",
+    "masstest": "npm run build && jest --config jestconfig.json -t mass",
     "clean": "shx rm -rf node_modules\\ dist\\ docs\\",
     "format": "prettier --write \"dev\\**\\*.ts\" \"dev\\**\\*.js\"",
     "lint": "tslint -p tsconfig.json",
