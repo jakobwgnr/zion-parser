@@ -8,6 +8,7 @@
 // ------------------------------------------------------------------------------
 
 import { Character } from "./character";
+import { Keyword } from "./keyword";
 import { SourceCode } from "./Sourcecode";
 import { Token } from "./Token";
 
@@ -32,25 +33,23 @@ export class Lexer {
   public execute() {
 
     while (!this.sourcecode.eof()) {
-      this.identifyToken(this.sourcecode.getCurrentChar());
+      this.identifyToken();
       this.sourcecode.NextChar();
 
     }
 
     this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
-
-
     return this.tokenList;
 
   }
 
-  private identifyToken(currentChar: string) {
+  private identifyToken() {
 
-    if (currentChar === " ") {
+    if (this.sourcecode.getCurrentChar() === " ") {
       // do nothing - just skip the Space - Not within a Token 
     } else {
       // Comment Token
-      if (currentChar === "*" && this.sourcecode.currentColumnRelative === 7) {
+      if (this.sourcecode.getCurrentChar() === "*" && this.sourcecode.currentColumnRelative === 7) {
         this.tokenStart();
         this.token.type = "Comment";
 
@@ -62,23 +61,25 @@ export class Lexer {
         this.tokenEnded();
 
       } else {
-        if (Character.isIdentifierStart(currentChar)) {
+        if (Character.isIdentifierStart(this.sourcecode.getCurrentChar())) {
           this.tokenStart();
 
-          while (Character.isIdentifierPart(currentChar)) {
-            this.chars = this.chars.concat(currentChar);
+          while (Character.isKeywordPart(this.sourcecode.getCurrentChar())) {
+            this.chars = this.chars.concat(this.sourcecode.getCurrentChar());
+            this.sourcecode.NextChar();
           }
 
-          if (this.isKeyword(this.chars)) {
+          if (Keyword.isKeyword(this.chars)) {
             this.token.type = "Keyword";
           } else {
             this.token.type = "Value";
+            while (Character.isIdentifierPart(this.sourcecode.getCurrentChar())) {
+              this.chars = this.chars.concat(this.sourcecode.getCurrentChar());
+              this.sourcecode.NextChar();
+            }
           }
-
           this.tokenEnded();
-
         }
-        this.chars = this.chars.concat(currentChar);
       }
     }
   }
