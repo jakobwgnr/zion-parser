@@ -48,7 +48,9 @@ export class Lexer {
       // do nothing - just skip the Space - Not within a Token 
     } else {
       // Comment Token
-      if (this.sourcecode.getCurrentChar() === ("*" || "/") && this.sourcecode.currentColumnRelative === 7) {
+      if ((this.sourcecode.getCurrentChar() === "*" ||
+        this.sourcecode.getCurrentChar() === "/")
+        && this.sourcecode.currentColumnRelative === 7) {
         this.tokenStart();
         this.token.type = "Comment";
 
