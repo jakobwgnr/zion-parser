@@ -10,9 +10,10 @@ test('Check if Lexer EOF token provides lines correctly', () => {
 });
 
 test('Check if Lexer EOF token provides columns correctly', () => {
-    const lexer = new Lexer('TEST1234\r\nTEST1234');
+    const lexer = new Lexer('123456789\r\n123456789');
 
     const tokenList: Token[] = lexer.execute();
     const eofToken: Token = tokenList.find(token => token.type === "EOF") as Token;
-    expect(eofToken.endColumnTotal).toBe(17);
+    expect(eofToken.endColumnTotal).toBe(19);
+    expect(eofToken.endLine).toBe(2);
 });

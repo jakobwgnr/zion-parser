@@ -192,5 +192,15 @@ export const Keyword = {
                 return false;
             }
         }
+    },
+
+    isExec(word: string): boolean {
+        const wordUpper: string = word.toUpperCase();
+        return wordUpper === 'EXEC';
+    },
+    containsEndExec(word: string): boolean {
+        const wordUpper: string = word.toUpperCase();
+        return wordUpper.includes("END-EXEC");
     }
+
 }

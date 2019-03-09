@@ -25,19 +25,21 @@ export class SourceCode {
     }
 
     public NextChar() {
-        /* Don't count line separators column*/
-        if (!Character.isLineTerminator(this.code.charAt(this.index))) {
-            this.columnsTotal++;
-            this.currentColumnRelative++;
-            this.index++;
-        } else {
-            this.currentLine++;
-            this.currentColumnRelative = 1;
-
-            if (Character.isLineTerminatorSequence(this.code.charAt(this.index), this.code.charAt(this.index + 1))) {
-                this.index = this.index + 2;
-            } else {
+        if (!this.eof()) {
+            /* Don't count line separators column*/
+            if (!Character.isLineTerminator(this.code.charAt(this.index))) {
+                this.columnsTotal++;
+                this.currentColumnRelative++;
                 this.index++;
+            } else {
+                this.currentLine++;
+                this.currentColumnRelative = 1;
+
+                if (Character.isLineTerminatorSequence(this.code.charAt(this.index), this.code.charAt(this.index + 1))) {
+                    this.index = this.index + 2;
+                } else {
+                    this.index++;
+                }
             }
         }
     }

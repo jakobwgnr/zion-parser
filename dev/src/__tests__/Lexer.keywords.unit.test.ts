@@ -22,3 +22,13 @@ test('Check if Lexer can destinguish between keyword and value', () => {
     expect(tokenList[1].type).toBe("Identifier");
     expect(tokenList[1].value).toBe('QC1CDPL');
 });
+
+test('Check if Lexer identifies EXEC', () => {
+    const lexer = new Lexer('           EXEC CICS\n               LINK PROGRAM(TESTPROGRAM)\n           END-EXEC');
+
+    const tokenList: Token[] = lexer.execute();
+    expect(tokenList[0].type).toBe("EXEC");
+    expect(tokenList[0].value).toBe('EXEC CICS\n               LINK PROGRAM(TESTPROGRAM)\n           END-EXEC');
+    expect(tokenList[0].startLine).toBe(1);
+    expect(tokenList[0].endLine).toBe(3);
+});

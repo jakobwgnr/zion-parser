@@ -33,6 +33,7 @@ export const Character = {
         return (cp >= 0x41 && cp <= 0x5A) ||      // A..Z
             (cp >= 0x61 && cp <= 0x7A) ||         // a..z
             (cp >= 0x30 && cp <= 0x39) ||         // 0..9
+            (cp === 0x28) || // (
             ((cp >= 0x80) && Regex.NonAsciiIdentifierStart.test(Character.fromCodePoint(cp)));
     },
 
@@ -93,6 +94,10 @@ export const Character = {
         const cp: number = char.charCodeAt(0);
         return (cp >= 0x30 && cp <= 0x39);      // 0..9
     },
+    isCobolTerminator(char: string): boolean {
+        const cp: number = char.charCodeAt(0);
+        return cp === 0x2E;      // .
+    },
 
     isNumeric(char: string): boolean {
         return !isNaN(Number(char));
@@ -104,6 +109,8 @@ export const Character = {
             (cp === 0x2B) ||    // +
             (cp === 0x2F) ||    // /
             (cp === 0x3D) ||    // =
+            (cp === 0x3E) ||    // >
+            (cp === 0x3C) ||    // <
             (cp === 0x2D);      // -
     }
 };
