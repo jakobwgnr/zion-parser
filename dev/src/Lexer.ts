@@ -24,6 +24,7 @@ export class Lexer {
   private readonly sourcecode: SourceCode;
   private token: Token = new Token();
   private tokenList: Token[] = [];
+  private notTokenerized: string = "";
 
   constructor(code: string) {
     this.sourcecode = new SourceCode(code);
@@ -32,55 +33,69 @@ export class Lexer {
   public execute() {
 
     while (!this.sourcecode.eof()) {
-
       if (this.sourcecode.getCurrentChar() === " ") {
         // do nothing - just skip the Space - Not within a Token 
-        this.sourcecode.NextChar();
+
       } else {
+        if (Character.isDecimalDigit(this.sourcecode.getCurrentChar()) && this.sourcecode.currentColumnRelative >= 1 && this.sourcecode.currentColumnRelative <= 6) {
 
-        if ((this.sourcecode.getCurrentChar() === "*" ||
-          this.sourcecode.getCurrentChar() === "/")
-          && this.sourcecode.currentColumnRelative === 7) {
-
-          this.processCommentToken();
+          this.processSequenceNumber();
 
         } else {
-          if (Character.isCobolWordStart(this.sourcecode.getCurrentChar())) {
-            // Needs to proccess a few chars as a Token can't be distinguished on first char
-            while (Character.isCobolWordPart(this.sourcecode.getCurrentChar())) {
-              this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
-              this.sourcecode.NextChar();
-            }
 
-            if (Character.isBracket(this.sourcecode.getCurrentChar()) && this.token.value.length <= 2) {
+          if ((this.sourcecode.getCurrentChar() === "*" ||
+            this.sourcecode.getCurrentChar() === "/")
+            && this.sourcecode.currentColumnRelative === 7) {
 
-              this.processPicValueToken();
-
-            } else {
-
-              this.processMiscIdentifierTokens();
-            }
+            this.processCommentToken();
 
           } else {
-            if (Character.isNumberIndicator(this.sourcecode.getCurrentChar())) {
+            if (Character.isCobolAritmeticOperator(this.sourcecode.getCurrentChar())) {
 
-              this.processNumericToken();
+              this.processOperator();
 
             } else {
-              if (Character.isStringIndicator(this.sourcecode.getCurrentChar())) {
+              if (Character.isCobolWordStart(this.sourcecode.getCurrentChar())) {
 
-                this.processStringToken();
+                this.processMiscIdentifierTokens();
 
+              } else {
+                if (Character.isStringIndicator(this.sourcecode.getCurrentChar())) {
+
+                  this.processStringToken();
+
+                } else {
+                  this.notTokenerized = this.notTokenerized.concat(this.sourcecode.getCurrentChar(), ";;", "\r\n");
+                }
               }
             }
+
           }
         }
       }
+
+      this.sourcecode.NextChar();
     }
 
     this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
+
     return this.tokenList;
 
+  }
+
+  private processSequenceNumber(): void {
+    this.tokenStart();
+    this.token.type = "SequenceNumberLiteral";
+
+    do {
+      this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+      this.sourcecode.NextChar();
+    } while (this.sourcecode.currentColumnRelative < 6) {
+
+      this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+
+      this.tokenEnded();
+    }
   }
 
   private processCommentToken(): void {
@@ -95,34 +110,42 @@ export class Lexer {
     this.tokenEnded();
   }
 
-  private processPicValueToken(): void {
+  private processOperator(): void {
     this.tokenStart();
-    this.token.type = "PIC";
-    do {
-      this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
-      this.sourcecode.NextChar();
 
-    } while (!Character.isBracket(this.sourcecode.getCurrentChar()))
-
-    // Also add the closing bracket - TODO: is there a more beautiful way
     this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
     this.sourcecode.NextChar();
+
+    if (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
+      this.token.type = "NumericLiteral";
+      while (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
+        this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+        this.sourcecode.NextChar();
+      }
+    } else {
+      this.token.type = "Operator";
+      while (Character.isCobolAritmeticOperator(this.sourcecode.getCurrentChar())) {
+        this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+        this.sourcecode.NextChar();
+      }
+    }
 
     this.tokenEnded();
   }
 
   private processMiscIdentifierTokens() {
+
     this.tokenStart();
+    while (Character.isCobolWordPart(this.sourcecode.getCurrentChar())) {
+      this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+      this.sourcecode.NextChar();
+    }
 
     if (Character.isNumeric(this.token.value)) {
       if (Character.isLevelIndicator(this.token.value)) {
         this.token.type = "Level";
       } else {
-        if (this.token.startColumnRelative === 1) {
-          this.token.type = "SequenceNumberLiteral";
-        } else {
-          this.token.type = "NumericLiteral";
-        }
+        this.token.type = "NumericLiteral";
       }
     } else {
       if (Keyword.isKeyword(this.token.value)) {

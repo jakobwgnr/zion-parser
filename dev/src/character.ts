@@ -17,30 +17,16 @@ export const Character = {
             String.fromCharCode(0xDC00 + ((cp - 0x10000) & 1023));
     },
 
-    // https://tc39.github.io/ecma262/#sec-white-space
-
-    // isWhiteSpace(char: string): boolean {
-    //     const cp: number = char.charCodeAt(0);
-    //     return (cp === 0x20) || (cp === 0x09) || (cp === 0x0B) || (cp === 0x0C) || (cp === 0xA0) ||
-    //         (cp >= 0x1680 && [0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x202F, 0x205F, 0x3000, 0xFEFF].indexOf(cp) >= 0);
-    // },
-
-    // https://tc39.github.io/ecma262/#sec-line-terminators
-
     isLineTerminator(char: string): boolean {
         const cp: number = char.charCodeAt(0);
         return (cp === 0x0A) || (cp === 0x0D) || (cp === 0x2028) || (cp === 0x2029);
     },
-
-    // https://tc39.github.io/ecma262/#prod-LineTerminatorSequence
 
     isLineTerminatorSequence(char1: string, char2: string): boolean {
         const cp1: number = char1.charCodeAt(0);
         const cp2: number = char2.charCodeAt(0);
         return (cp1 === 0x0D) && (cp2 === 0x0A);
     },
-
-    // https://tc39.github.io/ecma262/#sec-names-and-keywords
 
     isCobolWordStart(char: string): boolean {
         const cp: number = char.charCodeAt(0);
@@ -56,7 +42,10 @@ export const Character = {
             (cp >= 0x61 && cp <= 0x7A) ||         // a..z
             (cp >= 0x30 && cp <= 0x39) ||         // 0..9
             (cp === 0x2D) ||                      // - (Dash)
-            ((cp >= 0x80) && Regex.NonAsciiIdentifierPart.test(Character.fromCodePoint(cp)));
+            (cp === 0x28) || // (
+            (cp === 0x29) || // )
+            (cp === 0x3A);   // :
+
     },
 
     isLevelIndicator(char: string): boolean {
@@ -90,13 +79,15 @@ export const Character = {
             (cp === 0x22);    // " (Double-Quote)
     },
 
-    isBracket(char: string): boolean {
+    isOpeningBracket(char: string): boolean {
         const cp: number = char.charCodeAt(0);
-        return (cp === 0x28) || // ( 
-            (cp === 0x29);    // )
+        return (cp === 0x28); // ( 
     },
 
-    // https://tc39.github.io/ecma262/#sec-literals-numeric-literals
+    isClosingBracket(char: string): boolean {
+        const cp: number = char.charCodeAt(0);
+        return (cp === 0x29); // )
+    },
 
     isDecimalDigit(char: string): boolean {
         const cp: number = char.charCodeAt(0);
@@ -107,16 +98,12 @@ export const Character = {
         return !isNaN(Number(char));
     },
 
-    isHexDigit(char: string): boolean {
+    isCobolAritmeticOperator(char: string): boolean {
         const cp: number = char.charCodeAt(0);
-        return (cp >= 0x30 && cp <= 0x39) ||    // 0..9
-            (cp >= 0x41 && cp <= 0x46) ||       // A..F
-            (cp >= 0x61 && cp <= 0x66);         // a..f
-    },
-
-    isOctalDigit(char: string): boolean {
-        const cp: number = char.charCodeAt(0);
-        return (cp >= 0x30 && cp <= 0x37);      // 0..7
+        return (cp === 0x2A) || // *
+            (cp === 0x2B) ||    // +
+            (cp === 0x2F) ||    // /
+            (cp === 0x3D) ||    // =
+            (cp === 0x2D);      // -
     }
-
 };

@@ -14,5 +14,5 @@ test('Check if Lexer EOF token provides columns correctly', () => {
 
     const tokenList: Token[] = lexer.execute();
     const eofToken: Token = tokenList.find(token => token.type === "EOF") as Token;
-    expect(eofToken.endColumnTotal).toBe(18);
+    expect(eofToken.endColumnTotal).toBe(17);
 });

@@ -4,9 +4,9 @@ export class SourceCode {
     public currentLine: number = 1;
     public currentColumnRelative: number = 1;
     public columnsTotal: number = 1;
+    public index: number = 0;
 
     private code: string = "";
-    private index: number = 0;
 
     constructor(code: string) {
         this.code = code;
