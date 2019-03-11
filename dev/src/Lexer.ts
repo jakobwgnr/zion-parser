@@ -33,9 +33,8 @@ export class Lexer {
   public execute() {
 
     while (!this.sourcecode.eof()) {
-      if (this.sourcecode.getCurrentChar() === " ") {
-        // do nothing - just skip the Space - Not within a Token 
-        this.sourcecode.NextChar();
+      if (Character.isWhiteSpace(this.sourcecode.getCurrentChar())) {
+        this.processWhiteSpaceToken();
       } else {
         if (Character.isDecimalDigit(this.sourcecode.getCurrentChar()) && this.sourcecode.currentColumnRelative >= 1 && this.sourcecode.currentColumnRelative <= 6) {
 
@@ -87,6 +86,20 @@ export class Lexer {
 
   }
 
+  private processWhiteSpaceToken(): void {
+    this.tokenStart();
+    this.token.type = "WhiteSpace";
+
+    do {
+      this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
+      this.sourcecode.NextChar();
+    } while (Character.isWhiteSpace(this.sourcecode.getCurrentChar()))
+
+    this.tokenEnd();
+
+    // this.sourcecode.NextChar();
+  }
+
   private processSequenceNumberToken(): void {
     this.tokenStart();
     this.token.type = "SequenceNumberLiteral";
@@ -96,11 +109,9 @@ export class Lexer {
       this.sourcecode.NextChar();
     } while (this.sourcecode.currentColumnRelative <= 6)
 
-    // this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
-
     this.tokenEnd();
-
   }
+
 
   private processCommentToken(): void {
     this.tokenStart();

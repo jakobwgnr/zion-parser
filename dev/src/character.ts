@@ -112,5 +112,9 @@ export const Character = {
             (cp === 0x3E) ||    // >
             (cp === 0x3C) ||    // <
             (cp === 0x2D);      // -
+    },
+    isWhiteSpace(char: string): boolean {
+        const cp: number = char.charCodeAt(0);
+        return cp === 0x20;  // Space
     }
 };

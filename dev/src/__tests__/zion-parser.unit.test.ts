@@ -10,12 +10,14 @@ test('Zion-Parser.lex throws error on no such file', () => {
 
 test('Zion-Parser.lex takes a String stdin as input', () => {
     const tokenList: Token[] = zionParser.lex('      * This is a comment', new Options(false))
-    expect(tokenList[0].type).toBe("Comment");
+    const commentToken: Token = tokenList.find(token => token.type === "Comment") as Token;
+    expect(commentToken.type).toBe("Comment");
 });
 
 test('Zion-Parser.lex takes a path as input', () => {
     const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/comment.cbl')
-    expect(tokenList[0].type).toBe("Comment");
+    const commentToken: Token = tokenList.find(token => token.type === "Comment") as Token;
+    expect(commentToken.type).toBe("Comment");
 });
 
 // TODO: Tests for Parser
