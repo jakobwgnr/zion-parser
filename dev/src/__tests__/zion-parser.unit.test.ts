@@ -1,6 +1,6 @@
-import { Options } from '../Options';
-import { Token } from '../Token';
+import { Token } from '../Lexer/Token';
 import * as zionParser from '../zion-parser';
+import { Options } from '../zion-parser-options';
 
 test('Zion-Parser.lex throws error on no such file', () => {
     expect(() => {

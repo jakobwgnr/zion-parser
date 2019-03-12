@@ -1,5 +1,5 @@
-import { Lexer } from '../Lexer';
-import { Token } from '../Token';
+import { Lexer } from '../Lexer/Lexer';
+import { Token } from '../Lexer/Token';
 
 test('Check if Lexer identifies the IDENTIFICATION DIVISION Keywords', () => {
     const lexer = new Lexer('        IDENTIFICATION DIVISION');

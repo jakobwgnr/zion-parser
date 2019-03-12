@@ -1,5 +1,4 @@
-import { Options } from '../Options';
-import { Token } from '../Token';
+import { Token } from '../Lexer/Token';
 import * as zionParser from '../zion-parser';
 
 describe('mock', () => {
