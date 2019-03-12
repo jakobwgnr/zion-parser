@@ -175,7 +175,11 @@ export class Lexer {
             this.sourcecode.NextChar();
           }
         } else {
-          this.token.type = "Identifier";
+          if (this.token.startColumnRelative >= 72) {
+            this.token.type = "IdentificationArea";
+          } else {
+            this.token.type = "Identifier";
+          }
         }
       }
     }

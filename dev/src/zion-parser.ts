@@ -9,9 +9,9 @@
 import * as fs from 'fs';
 import * as fscheck from './util/fscheck';
 
-import { Lexer } from './Lexer';
-import { Options } from './Options';
-import { Parser } from './Parser';
+import { Lexer } from './Lexer/Lexer';
+import { Parser } from './Parser/Parser';
+import { Options } from './zion-parser-options';
 
 import * as path from 'path';
 

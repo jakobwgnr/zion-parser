@@ -17,3 +17,11 @@ test('Check if Lexer EOF token provides columns correctly', () => {
     expect(eofToken.endColumnTotal).toBe(19);
     expect(eofToken.endLine).toBe(2);
 });
+
+test('Check if Lexer identifies IdentificationArea correctly', () => {
+    const lexer = new Lexer('                                                                        Identify');
+
+    const tokenList: Token[] = lexer.execute();
+    const IdentificationAreaToken: Token = tokenList.find(token => token.type === "IdentificationArea") as Token;
+    expect(IdentificationAreaToken.value).toBe("Identify");
+});
