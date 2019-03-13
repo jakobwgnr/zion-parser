@@ -7,6 +7,7 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
+import * as logger from "../config/winston";
 import { Character } from "./character";
 import { Keyword } from "./keyword";
 import { SourceCode } from "./Sourcecode";
@@ -80,6 +81,7 @@ export class Lexer {
       // this.sourcecode.NextChar();
     }
 
+    logger.debug("finalized lexing");
     this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
 
     return this.tokenList;
