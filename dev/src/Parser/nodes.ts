@@ -22,30 +22,29 @@ import { Syntax } from './syntax';
 /* tslint:disable:max-classes-per-file */
 
 export class Node {
-    public type: string = "";
-    public startColumnTotal: number = 0;
-    public startColumnRelative: number = 0;
-    public startLine: number = 0;
-    public endColumnTotal: number = 0;
-    public endColumnRelative: number = 0;
-    public endLine: number = 0;
+  public type: string = '';
+  public startColumnTotal: number = 0;
+  public startColumnRelative: number = 0;
+  public startLine: number = 0;
+  public endColumnTotal: number = 0;
+  public endColumnRelative: number = 0;
+  public endLine: number = 0;
 
-    public tokenList: Token[] = [];
-    constructor(startColumnTotal: number, startColumnRelative: number, startLine: number) {
-
-        if (startColumnTotal) {
-            this.startColumnTotal = startColumnTotal;
-        }
-        if (startColumnRelative) {
-            this.startColumnRelative = startColumnRelative;
-        }
-        if (startLine) {
-            this.startLine = startLine;
-        }
+  public tokenList: Token[] = [];
+  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number) {
+    if (startColumnTotal) {
+      this.startColumnTotal = startColumnTotal;
     }
+    if (startColumnRelative) {
+      this.startColumnRelative = startColumnRelative;
+    }
+    if (startLine) {
+      this.startLine = startLine;
+    }
+  }
 
-    public toString = (): string => {
-        return `Node (type: ${this.type},
+  public toString = (): string => {
+    return `Node (type: ${this.type},
             startColumnTotal: ${this.startColumnTotal},
             endColumnTotal: ${this.endColumnTotal},
             startColumnRelative: ${this.startColumnRelative},
@@ -54,12 +53,10 @@ export class Node {
             endLine: ${this.endLine}),
             includedTokens: ${this.tokenList}
             \r\n`;
-    }
+  };
 }
 
-export class RecordingModeClause extends Node {
-
-}
+export class RecordingModeClause extends Node {}
 
 // export type ConfigurationSectionParagraph = SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph;
 // export type SpecialNamesParagraphClause = AlphabetClause | SymbolicCharactersClause | ClassClause | CurrencySignClause | DecimalPointClause;
@@ -75,9 +72,5 @@ export class RecordingModeClause extends Node {
 //     | ServiceLabelStatement | ServiceReloadStatement | SkipStatement | TitleStatement | UseStatement;
 // export type Condition = CombinableCondition | CombinedCondition;
 // export type SimpleCondition = ClassCondition | ConditionNameCondition | RelationCondition | SignCondition | SwitchStatusCondition | NegatedSimpleCondition;
-// export type Name = AlphabetName | ClassName | ConditionName | FileName | IndexName | MnemonicName | RecordName | RoutineName | SymbolicCharacter | LibraryName | ProgramName | TextName | ParagraphName | SectionName | ComputerName | LanguageName | EnvironmentName 
+// export type Name = AlphabetName | ClassName | ConditionName | FileName | IndexName | MnemonicName | RecordName | RoutineName | SymbolicCharacter | LibraryName | ProgramName | TextName | ParagraphName | SectionName | ComputerName | LanguageName | EnvironmentName
 // | AssignmentName | BasisName;
-
-
-
-

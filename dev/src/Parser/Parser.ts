@@ -7,21 +7,19 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
-import { ErrorHandler } from "./error-handler";
+import { ErrorHandler } from './error-handler';
 
-import { Token } from "../Lexer/Token";
+import { Token } from '../Lexer/Token';
 import { TokenType } from '../Lexer/tokentype';
-import * as Nodes from "../Parser/nodes";
-import { Node } from "../Parser/nodes";
-import { Messages } from "./messages";
-import { Syntax } from "./syntax";
+import * as Nodes from '../Parser/nodes';
+import { Node } from '../Parser/nodes';
+import { Messages } from './messages';
+import { Syntax } from './syntax';
 const debug = require('debug')('zion-parser:parser');
-
 
 // ------------------------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------------------------
-
 
 // ------------------------------------------------------------------------------
 // Public Interface
@@ -41,10 +39,7 @@ export class Parser {
   }
 
   public execute(): Node[] {
-
     this.nodeList.push(this.parseRecordingModeClause());
-
-
 
     // while (this.tokens.length <= this.index) {
     //   let node: any = '';
@@ -83,8 +78,6 @@ export class Parser {
     //   this.nextToken();
     // }
 
-
-
     return this.nodeList;
   }
 
@@ -105,11 +98,12 @@ export class Parser {
     this.expectModeIdentifier(this.currentToken);
     node.tokenList.push(this.currentToken);
 
-    return this.finalizeNode(node, new Nodes.RecordingModeClause(node.startColumnTotal, node.startColumnRelative, node.startLine), this.currentToken)
+    return this.finalizeNode(
+      node,
+      new Nodes.RecordingModeClause(node.startColumnTotal, node.startColumnRelative, node.startLine),
+      this.currentToken,
+    );
   }
-
-
-
 
   // --------------------------
   // HELPERS
@@ -123,7 +117,12 @@ export class Parser {
   }
 
   private isIrrelevantToken(token: Token) {
-    return token.type === TokenType.Comment || token.type === TokenType.IdentificationArea || token.type === TokenType.SequenceNumberLiteral || token.type === TokenType.WhiteSpace;
+    return (
+      token.type === TokenType.Comment ||
+      token.type === TokenType.IdentificationArea ||
+      token.type === TokenType.SequenceNumberLiteral ||
+      token.type === TokenType.WhiteSpace
+    );
   }
 
   private startNode(token: Token) {
@@ -152,7 +151,10 @@ export class Parser {
   }
 
   expectModeIdentifier(token: Token) {
-    if (token.type !== TokenType.Identifier || !(token.value === 'F' || token.value === 'V' || token.value === 'U' || token.value === 'S')) {
+    if (
+      token.type !== TokenType.Identifier ||
+      !(token.value === 'F' || token.value === 'V' || token.value === 'U' || token.value === 'S')
+    ) {
       this.throwUnexpectedToken(token);
     }
   }
@@ -161,17 +163,21 @@ export class Parser {
     return token.type === TokenType.Keyword && token.value === keyword;
   }
 
-
   // Throw an exception because of the token.
   unexpectedTokenError(token: Token, message?: string): Error {
     let msg = message || Messages.UnexpectedToken;
 
     if (!message) {
-      msg = (token.type === TokenType.EOF) ? Messages.UnexpectedEOS :
-        (token.type === TokenType.Identifier) ? Messages.UnexpectedIdentifier :
-          (token.type === TokenType.NumericLiteral) ? Messages.UnexpectedNumber :
-            (token.type === TokenType.StringLiteral) ? Messages.UnexpectedString :
-              Messages.UnexpectedToken;
+      msg =
+        token.type === TokenType.EOF
+          ? Messages.UnexpectedEOS
+          : token.type === TokenType.Identifier
+          ? Messages.UnexpectedIdentifier
+          : token.type === TokenType.NumericLiteral
+          ? Messages.UnexpectedNumber
+          : token.type === TokenType.StringLiteral
+          ? Messages.UnexpectedString
+          : Messages.UnexpectedToken;
     }
 
     msg = msg.replace('%0', token.value);
@@ -183,4 +189,3 @@ export class Parser {
     throw this.unexpectedTokenError(token, message);
   }
 }
-

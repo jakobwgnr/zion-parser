@@ -1,46 +1,42 @@
-import { Character } from "./character";
+import { Character } from './character';
 
 export class SourceCode {
-    public currentLine: number = 1;
-    public currentColumnRelative: number = 1;
-    public columnsTotal: number = 1;
-    public index: number = 0;
+  public currentLine: number = 1;
+  public currentColumnRelative: number = 1;
+  public columnsTotal: number = 1;
+  public index: number = 0;
 
-    private code: string = "";
+  private code: string = '';
 
-    constructor(code: string) {
-        this.code = code;
-    }
+  constructor(code: string) {
+    this.code = code;
+  }
 
-    public eof(): boolean {
-        return this.index >= this.code.length;
-    }
+  public eof(): boolean {
+    return this.index >= this.code.length;
+  }
 
-    public getCurrentChar(): string {
-        return this.code.charAt(this.index);
-    }
+  public getCurrentChar(): string {
+    return this.code.charAt(this.index);
+  }
 
-    public NextChar() {
-        if (!this.eof()) {
-            /* Don't count line separators column*/
-            if (!Character.isLineTerminator(this.code.charAt(this.index))) {
-                this.columnsTotal++;
-                this.currentColumnRelative++;
-                this.index++;
-            } else {
-                this.currentLine++;
-                this.currentColumnRelative = 1;
+  public NextChar() {
+    if (!this.eof()) {
+      /* Don't count line separators column*/
+      if (!Character.isLineTerminator(this.code.charAt(this.index))) {
+        this.columnsTotal++;
+        this.currentColumnRelative++;
+        this.index++;
+      } else {
+        this.currentLine++;
+        this.currentColumnRelative = 1;
 
-                if (Character.isLineTerminatorSequence(this.code.charAt(this.index), this.code.charAt(this.index + 1))) {
-                    this.index = this.index + 2;
-                } else {
-                    this.index++;
-                }
-            }
+        if (Character.isLineTerminatorSequence(this.code.charAt(this.index), this.code.charAt(this.index + 1))) {
+          this.index = this.index + 2;
+        } else {
+          this.index++;
         }
+      }
     }
-
-
-
-
+  }
 }

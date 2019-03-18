@@ -17,7 +17,6 @@ import { Options } from './zion-parser-options';
 import * as path from 'path';
 require('debug').enable('zion-parser:*,-zion-parser:code-path');
 
-
 // ------------------------------------------------------------------------------
 // Public Interface
 // ------------------------------------------------------------------------------
@@ -57,9 +56,8 @@ export function lex(input: string, options?: any) {
 
 function codeFromPath(filePath: string): string {
   if (fscheck.isFile(path.join(__dirname, filePath))) {
-    return fs.readFileSync(path.join(__dirname, filePath), 'utf8')
+    return fs.readFileSync(path.join(__dirname, filePath), 'utf8');
   } else {
     throw new Error('Not a file');
   }
-
 }

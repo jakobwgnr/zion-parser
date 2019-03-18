@@ -7,12 +7,12 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
-import * as logger from "../config/winston";
-import { Character } from "./character";
-import { Keyword } from "./keyword";
-import { SourceCode } from "./Sourcecode";
-import { Token } from "./Token";
-import { TokenType } from "./tokentype";
+import * as logger from '../config/winston';
+import { Character } from './character';
+import { Keyword } from './keyword';
+import { SourceCode } from './Sourcecode';
+import { Token } from './Token';
+import { TokenType } from './tokentype';
 
 // ------------------------------------------------------------------------------
 // Helpers
@@ -32,38 +32,31 @@ export class Lexer {
   }
 
   public execute() {
-
     while (!this.sourcecode.eof()) {
       if (Character.isWhiteSpace(this.sourcecode.getCurrentChar())) {
         this.processWhiteSpaceToken();
       } else {
-        if (Character.isDecimalDigit(this.sourcecode.getCurrentChar()) && this.sourcecode.currentColumnRelative >= 1 && this.sourcecode.currentColumnRelative <= 6) {
-
+        if (
+          Character.isDecimalDigit(this.sourcecode.getCurrentChar()) &&
+          this.sourcecode.currentColumnRelative >= 1 &&
+          this.sourcecode.currentColumnRelative <= 6
+        ) {
           this.processSequenceNumberToken();
-
         } else {
-
-          if ((this.sourcecode.getCurrentChar() === "*" ||
-            this.sourcecode.getCurrentChar() === "/")
-            && this.sourcecode.currentColumnRelative === 7) {
-
+          if (
+            (this.sourcecode.getCurrentChar() === '*' || this.sourcecode.getCurrentChar() === '/') &&
+            this.sourcecode.currentColumnRelative === 7
+          ) {
             this.processCommentToken();
-
           } else {
             if (Character.isCobolAritmeticOperator(this.sourcecode.getCurrentChar())) {
-
               this.processOperator();
-
             } else {
               if (Character.isCobolWordStart(this.sourcecode.getCurrentChar())) {
-
                 this.processMiscIdentifierTokens();
-
               } else {
                 if (Character.isStringIndicator(this.sourcecode.getCurrentChar())) {
-
                   this.processStringToken();
-
                 } else {
                   if (Character.isCobolTerminator(this.sourcecode.getCurrentChar())) {
                     this.processTerminatorToken();
@@ -73,7 +66,6 @@ export class Lexer {
                 }
               }
             }
-
           }
         }
       }
@@ -81,10 +73,20 @@ export class Lexer {
       // this.sourcecode.NextChar();
     }
 
-    this.tokenList.push(new Token("", TokenType.EOF, 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
+    this.tokenList.push(
+      new Token(
+        '',
+        TokenType.EOF,
+        1,
+        undefined,
+        1,
+        this.sourcecode.columnsTotal,
+        undefined,
+        this.sourcecode.currentLine,
+      ),
+    );
 
     return this.tokenList;
-
   }
 
   private processWhiteSpaceToken(): void {
@@ -94,7 +96,7 @@ export class Lexer {
     do {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
-    } while (Character.isWhiteSpace(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof())
+    } while (Character.isWhiteSpace(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof());
 
     this.tokenEnd();
 
@@ -108,11 +110,10 @@ export class Lexer {
     do {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
-    } while (this.sourcecode.currentColumnRelative <= 6 && !this.sourcecode.eof())
+    } while (this.sourcecode.currentColumnRelative <= 6 && !this.sourcecode.eof());
 
     this.tokenEnd();
   }
-
 
   private processCommentToken(): void {
     this.tokenStart();
@@ -152,7 +153,6 @@ export class Lexer {
   }
 
   private processMiscIdentifierTokens() {
-
     this.tokenStart();
     while (Character.isCobolWordPart(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
@@ -200,11 +200,15 @@ export class Lexer {
   private processNotIdentifiedToken(): void {
     this.tokenStart();
     this.token.type = TokenType.NotIdentified;
-    while (this.sourcecode.getCurrentChar() !== ' ' && !Character.isLineTerminator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
+    while (
+      this.sourcecode.getCurrentChar() !== ' ' &&
+      !Character.isLineTerminator(this.sourcecode.getCurrentChar()) &&
+      !this.sourcecode.eof()
+    ) {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
     }
-    if (this.token.value !== "") {
+    if (this.token.value !== '') {
       this.tokenEnd();
     } else {
       this.token.initToken();
@@ -222,14 +226,13 @@ export class Lexer {
     do {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
-    } while (!Character.isStringIndicator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof())
+    } while (!Character.isStringIndicator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof());
 
     // Still add the StringIndicator (' or ") to the chars value - TODO: Is there a better solution?
     this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
     this.sourcecode.NextChar();
 
     this.tokenEnd();
-
   }
 
   private tokenStart() {

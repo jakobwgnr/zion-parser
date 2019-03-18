@@ -23,10 +23,7 @@ var options = {
 // instantiate a new Winston Logger with the settings defined above
 var logger = new winston.createLogger({
   exitOnError: false, // do not exit on handled exceptions
-  transports: [
-    new winston.transports.File(options.file),
-    new winston.transports.Console(options.console)
-  ],
+  transports: [new winston.transports.File(options.file), new winston.transports.Console(options.console)],
 });
 
 // create a stream object with a 'write' function that will be used by `morgan`
