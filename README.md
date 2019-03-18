@@ -1,4 +1,4 @@
-# zion-parser [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![Codecov Coverage][coverage-image]][coverage-url]
+# zion-parser [![travis][travis-image]][travis-url] [![npm][npm-image]][npm-url] [![Coverage Status](https://coveralls.io/repos/github/jakobwgnr/zion-parser/badge.svg)](https://coveralls.io/github/jakobwgnr/zion-parser)
 
 [travis-image]: https://travis-ci.org/jakobwgnr/zion-parser.svg?branch=master
 [travis-url]: https://travis-ci.org/jakobwgnr/zion-parser
@@ -6,6 +6,7 @@
 [npm-url]: https://www.npmjs.com/package/zion-parser
 [coverage-image]: https://img.shields.io/codecov/c/github/jakobwgnr/zion-parser/master.svg?style=flat-square
 [coverage-url]: https://codecov.io/gh/jakobwgnr/zion-parser/
+
 
 A typescript parser (and Lexer) implementation for COBOL
 

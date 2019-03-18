@@ -23,7 +23,7 @@
     "postversion": "git push && git push --tags",
     "typedoc": "typedoc --out ./docs --mode modules --tsconfig ./tsconfig.json ./dev/src/",
     "posttypedoc": "shx cp .nojekyll docs/.nojekyll",
-    "coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
+    "coveralls": "jest unit --config jestconfig.json --coverage && cat ./coverage/lcov.info | coveralls"
   },
   "files": [
     "dist/**/*"
