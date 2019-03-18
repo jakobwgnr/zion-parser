@@ -1,6 +1,5 @@
 import { SourceCode } from '../../Lexer/Sourcecode';
 
-test('EOF works correct')
 test('EOF works correct', () => {
     const sourceCode = new SourceCode('1');
     expect(sourceCode.eof()).toBeFalsy();

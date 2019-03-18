@@ -64,6 +64,7 @@ export class Token {
         this.endLine = 0;
     }
 
+    /* istanbul ignore next */
     public toString = (): string => {
         return `Token (type: ${this.type},
             value: ${this.value},
