@@ -16,10 +16,6 @@ export class SourceCode {
         return this.index >= this.code.length;
     }
 
-    public getCharAtIndex(index: number): string {
-        return this.code.charAt(index);
-    }
-
     public getCurrentChar(): string {
         return this.code.charAt(this.index);
     }

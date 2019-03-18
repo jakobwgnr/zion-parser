@@ -23,7 +23,7 @@ export const Keyword = {
                     (wordUpper === 'KEY') || (wordUpper === 'NOT') || (wordUpper === 'PIC') ||
                     (wordUpper === 'ARE') || (wordUpper === 'EOP') || (wordUpper === 'ESI') ||
                     (wordUpper === 'FOR') || (wordUpper === 'RUN') || (wordUpper === 'SUM') ||
-                    (wordUpper === 'TOP') || (wordUpper === 'USE');
+                    (wordUpper === 'TOP') || (wordUpper === 'USE') || (wordUpper === 'MAP');
             }
             case 4: {
                 return (wordUpper === 'CALL') || (wordUpper === 'CODE') || (wordUpper === 'DATA') ||
@@ -43,7 +43,8 @@ export const Keyword = {
                     (wordUpper === 'CORR') || (wordUpper === 'DOWN') || (wordUpper === 'EXIT') ||
                     (wordUpper === 'FROM') || (wordUpper === 'INTO') || (wordUpper === 'LOCK') ||
                     (wordUpper === 'MOVE') || (wordUpper === 'STOP') || (wordUpper === 'SYNC') ||
-                    (wordUpper === 'TRUE') || (wordUpper === 'TYPE');
+                    (wordUpper === 'TRUE') || (wordUpper === 'TYPE') || (wordUpper === 'DATE') ||
+                    (wordUpper === 'LIST');
             }
             case 5: {
                 return (wordUpper === 'AFTER') || (wordUpper === 'BASIS') || (wordUpper === 'CLASS') ||
@@ -64,7 +65,8 @@ export const Keyword = {
                     (wordUpper === 'GROUP') || (wordUpper === 'LINES') || (wordUpper === 'OTHER') ||
                     (wordUpper === 'PURGE') || (wordUpper === 'RESET') || (wordUpper === 'RIGHT') ||
                     (wordUpper === 'START') || (wordUpper === 'SUPER') || (wordUpper === 'TITLE') ||
-                    (wordUpper === 'TRACE') || (wordUpper === 'USING') || (wordUpper === 'ZEROS');
+                    (wordUpper === 'TRACE') || (wordUpper === 'USING') || (wordUpper === 'ZEROS') ||
+                    (wordUpper === 'NOMAP');
 
             } case 6: {
                 return (wordUpper === 'ACCEPT') || (wordUpper === 'ACCESS') || (wordUpper === 'BEFORE') ||
@@ -84,7 +86,8 @@ export const Keyword = {
                     (wordUpper === 'DIVIDE') || (wordUpper === 'ENDING') || (wordUpper === 'EXTEND') ||
                     (wordUpper === 'INVOKE') || (wordUpper === 'NUMBER') || (wordUpper === 'OUTPUT') ||
                     (wordUpper === 'QUOTES') || (wordUpper === 'RETURN') || (wordUpper === 'REWIND') ||
-                    (wordUpper === 'STATUS') || (wordUpper === 'STRING');
+                    (wordUpper === 'STATUS') || (wordUpper === 'STRING') || (wordUpper === 'EBCDIC') ||
+                    (wordUpper === 'NOLIST');
 
             } case 7: {
                 return (wordUpper === 'ADDRESS') || (wordUpper === 'END-ADD') || (wordUpper === 'HEADING') ||
@@ -100,7 +103,8 @@ export const Keyword = {
                     (wordUpper === 'DISPLAY') || (wordUpper === 'DYNAMIC') || (wordUpper === 'INSPECT') ||
                     (wordUpper === 'INVALID') || (wordUpper === 'LINKAGE') || (wordUpper === 'NUMERIC') ||
                     (wordUpper === 'PROCEED') || (wordUpper === 'PROGRAM') || (wordUpper === 'RESERVE') ||
-                    (wordUpper === 'REWRITE') || (wordUpper === 'ROUNDED') || (wordUpper === 'VARYING');
+                    (wordUpper === 'REWRITE') || (wordUpper === 'ROUNDED') || (wordUpper === 'VARYING') ||
+                    (wordUpper === 'PROCESS');
             } case 8: {
                 return (wordUpper === 'ALPHABET') || (wordUpper === 'CLASS-ID') || (wordUpper === 'CODE-SET') ||
                     (wordUpper === 'END-CALL') || (wordUpper === 'GENERATE') || (wordUpper === 'NEGATIVE') ||
@@ -115,7 +119,8 @@ export const Keyword = {
                     (wordUpper === 'EXTERNAL') || (wordUpper === 'FUNCTION') || (wordUpper === 'MULTIPLE') ||
                     (wordUpper === 'MULTIPLY') || (wordUpper === 'OVERFLOW') || (wordUpper === 'OVERRIDE') ||
                     (wordUpper === 'REVERSED') || (wordUpper === 'STANDARD') || (wordUpper === 'SUBTRACT') ||
-                    (wordUpper === 'SUPPRESS') || (wordUpper === 'SYMBOLIC') || (wordUpper === 'TRAILING');
+                    (wordUpper === 'SUPPRESS') || (wordUpper === 'SYMBOLIC') || (wordUpper === 'TRAILING') ||
+                    (wordUpper === 'NOSOURCE');
             } case 9: {
                 return (wordUpper === 'ADVANCING') || (wordUpper === 'BEGINNING') || (wordUpper === 'CHARACTER') ||
                     (wordUpper === 'COLLATING') || (wordUpper === 'METACLASS') || (wordUpper === 'RECORDING') ||
