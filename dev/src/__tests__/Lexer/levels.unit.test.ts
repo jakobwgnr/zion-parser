@@ -1,5 +1,5 @@
-import { Lexer } from '../Lexer/Lexer';
-import { Token } from '../Lexer/Token';
+import { Lexer } from '../../Lexer/Lexer';
+import { Token } from '../../Lexer/Token';
 
 test('Lexer identifies 1 digit level', () => {
     const lexer = new Lexer('        1 LEVEL-INDICATOR');

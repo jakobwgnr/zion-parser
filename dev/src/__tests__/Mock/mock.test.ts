@@ -1,11 +1,11 @@
-import { Token } from '../Lexer/Token';
-import { Node } from '../Parser/nodes';
-import * as zionParser from '../zion-parser';
-import { Options } from '../zion-parser-options';
+import { Token } from '../../Lexer/Token';
+import { Node } from '../../Parser/nodes';
+import * as zionParser from '../../zion-parser';
+import { Options } from '../../zion-parser-options';
 
 describe('mock', () => {
     test('Zion-Parser.lex able to lex a complete COBOL program', () => {
-        const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/QC1CDPL.cbl', new Options(true));
+        const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/QC1CDPL.cbl');
         expect(tokenList[0].type).toBe("SequenceNumberLiteral");
 
         const fs = require('fs');
@@ -18,7 +18,7 @@ describe('mock', () => {
     })
 
     test('Zion-Parser.parse able to parse a COBOL statement', () => {
-        const nodeList: Node[] = zionParser.parse('RECORDING MODE IS F');
+        const nodeList: Node[] = zionParser.parse('RECORDING MODE IS F', new Options(false));
 
         const fs = require('fs');
 

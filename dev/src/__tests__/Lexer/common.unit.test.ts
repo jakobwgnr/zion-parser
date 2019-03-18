@@ -1,5 +1,5 @@
-import { Lexer } from '../Lexer/Lexer';
-import { Token } from '../Lexer/Token';
+import { Lexer } from '../../Lexer/Lexer';
+import { Token } from '../../Lexer/Token';
 
 test('Check if Lexer EOF token provides lines correctly', () => {
     const lexer = new Lexer('      * Line1\r\n      * Line2');

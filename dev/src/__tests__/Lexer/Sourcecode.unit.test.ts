@@ -1,4 +1,4 @@
-import { SourceCode } from '../Lexer/Sourcecode';
+import { SourceCode } from '../../Lexer/Sourcecode';
 
 test('Check if SourceCode counts lines + columns correctly if CR', () => {
     const sourceCode = new SourceCode('123456789\r123456789');

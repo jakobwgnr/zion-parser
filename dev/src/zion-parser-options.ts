@@ -1,5 +1,5 @@
 export class Options {
-    public fromPath: boolean = false;
+    public fromPath: boolean = true;
 
     constructor(fromPath?: boolean) {
         if (fromPath !== undefined) {
