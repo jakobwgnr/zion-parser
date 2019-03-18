@@ -43,6 +43,18 @@ export class Node {
             this.startLine = startLine;
         }
     }
+
+    public toString = (): string => {
+        return `Node (type: ${this.type},
+            startColumnTotal: ${this.startColumnTotal},
+            endColumnTotal: ${this.endColumnTotal},
+            startColumnRelative: ${this.startColumnRelative},
+            endColumnRelative: ${this.endColumnRelative},
+            startLine: ${this.startLine},
+            endLine: ${this.endLine}),
+            includedTokens: ${this.tokenList}
+            \r\n`;
+    }
 }
 
 export class RecordingModeClause extends Node {

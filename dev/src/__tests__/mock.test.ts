@@ -1,10 +1,11 @@
 import { Token } from '../Lexer/Token';
 import { Node } from '../Parser/nodes';
 import * as zionParser from '../zion-parser';
+import { Options } from '../zion-parser-options';
 
 describe('mock', () => {
     test('Zion-Parser.lex able to lex a complete COBOL program', () => {
-        const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/QC1CDPL.cbl')
+        const tokenList: Token[] = zionParser.lex('./__tests__/testfiles/QC1CDPL.cbl', new Options(true));
         expect(tokenList[0].type).toBe("SequenceNumberLiteral");
 
         const fs = require('fs');

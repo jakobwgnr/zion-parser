@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as fscheck from './util/fscheck';
 
 import { Lexer } from './Lexer/Lexer';
+import { Node } from './Parser/nodes';
 import { Parser } from './Parser/Parser';
 import { Options } from './zion-parser-options';
 
@@ -21,31 +22,21 @@ require('debug').enable('zion-parser:*,-zion-parser:code-path');
 // Public Interface
 // ------------------------------------------------------------------------------
 
-export function parse(input: string, options?: Options) {
+export function parse(input: string, options?: Options): Node[] {
   if (!options) {
     options = new Options();
   }
+  let code: string;
 
   if (options.fromPath) {
-    if (fscheck.isFile(input)) {
-      fs.readFile(input, 'utf8', (error, data) => {
-        const lexer = new Lexer(data);
-        const tokens = lexer.execute();
-        const parser = new Parser(tokens);
-
-        return parser.execute();
-      })
-    } else {
-      throw new Error('Not a file');
-    }
+    code = codeFromPath(input);
   } else {
-    const lexer = new Lexer(input);
-    const tokens = lexer.execute();
-    const parser = new Parser(tokens);
-
-    console.log(input);
-    return parser.execute();
+    code = input;
   }
+
+  const lexer = new Lexer(code);
+  const parser = new Parser(lexer.execute());
+  return parser.execute();
 }
 
 export function lex(input: string, options?: Options) {

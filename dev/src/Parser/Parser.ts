@@ -14,6 +14,7 @@ import { TokenType } from '../Lexer/tokentype';
 import * as Nodes from "../Parser/nodes";
 import { Node } from "../Parser/nodes";
 import { Messages } from "./messages";
+import { Syntax } from "./syntax";
 const debug = require('debug')('zion-parser:parser');
 
 
@@ -89,7 +90,7 @@ export class Parser {
 
   private parseRecordingModeClause(): Nodes.RecordingModeClause {
     const node = this.startNode(this.currentToken);
-    debug("parse" + this.currentToken.toString());
+    node.type = Syntax.RecordingModeClause;
     this.nextToken();
     if (this.isOptionalKeyword('MODE', this.currentToken)) {
       node.tokenList.push(this.currentToken);
@@ -100,6 +101,7 @@ export class Parser {
       this.nextToken();
     }
 
+    debug(this.currentToken.toString());
     this.expectModeIdentifier(this.currentToken);
     node.tokenList.push(this.currentToken);
 
@@ -115,6 +117,13 @@ export class Parser {
   private nextToken() {
     this.index++;
     this.currentToken = this.tokens[this.index];
+    if (this.isIrrelevantToken(this.currentToken)) {
+      this.nextToken();
+    }
+  }
+
+  private isIrrelevantToken(token: Token) {
+    return token.type === TokenType.Comment || token.type === TokenType.IdentificationArea || token.type === TokenType.SequenceNumberLiteral || token.type === TokenType.WhiteSpace;
   }
 
   private startNode(token: Token) {
@@ -128,6 +137,7 @@ export class Parser {
     node.endColumnTotal = endToken.endColumnTotal;
     node.endLine = endToken.endLine;
     node.tokenList = startNode.tokenList;
+    node.type = startNode.type;
 
     return node;
   }
