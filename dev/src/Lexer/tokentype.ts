@@ -10,6 +10,8 @@ export const TokenType = {
     IdentificationArea: 'IdentificationArea',
     Identifier: 'Identifier',
     EOF: 'EOF',
-    StringLiteral: 'StringLiteral'
+    StringLiteral: 'StringLiteral',
+    Terminator: 'Terminator',
+    NotIdentified: 'NotIdentified'
 
 }

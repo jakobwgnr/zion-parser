@@ -12,6 +12,7 @@ import { Character } from "./character";
 import { Keyword } from "./keyword";
 import { SourceCode } from "./Sourcecode";
 import { Token } from "./Token";
+import { TokenType } from "./tokentype";
 
 // ------------------------------------------------------------------------------
 // Helpers
@@ -80,7 +81,7 @@ export class Lexer {
       // this.sourcecode.NextChar();
     }
 
-    this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
+    this.tokenList.push(new Token("", TokenType.EOF, 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
 
     return this.tokenList;
 
@@ -88,12 +89,12 @@ export class Lexer {
 
   private processWhiteSpaceToken(): void {
     this.tokenStart();
-    this.token.type = "WhiteSpace";
+    this.token.type = TokenType.WhiteSpace;
 
     do {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
-    } while (Character.isWhiteSpace(this.sourcecode.getCurrentChar()))
+    } while (Character.isWhiteSpace(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof())
 
     this.tokenEnd();
 
@@ -102,12 +103,12 @@ export class Lexer {
 
   private processSequenceNumberToken(): void {
     this.tokenStart();
-    this.token.type = "SequenceNumberLiteral";
+    this.token.type = TokenType.SequenceNumberLiteral;
 
     do {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
-    } while (this.sourcecode.currentColumnRelative <= 6)
+    } while (this.sourcecode.currentColumnRelative <= 6 && !this.sourcecode.eof())
 
     this.tokenEnd();
   }
@@ -115,7 +116,7 @@ export class Lexer {
 
   private processCommentToken(): void {
     this.tokenStart();
-    this.token.type = "Comment";
+    this.token.type = TokenType.Comment;
 
     while (!Character.isLineTerminator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
@@ -134,14 +135,14 @@ export class Lexer {
     this.sourcecode.NextChar();
 
     if (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
-      this.token.type = "NumericLiteral";
-      while (Character.isDecimalDigit(this.sourcecode.getCurrentChar())) {
+      this.token.type = TokenType.NumericLiteral;
+      while (Character.isDecimalDigit(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
         this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
         this.sourcecode.NextChar();
       }
     } else {
-      this.token.type = "Operator";
-      while (Character.isCobolAritmeticOperator(this.sourcecode.getCurrentChar())) {
+      this.token.type = TokenType.Operator;
+      while (Character.isCobolAritmeticOperator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
         this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
         this.sourcecode.NextChar();
       }
@@ -153,32 +154,32 @@ export class Lexer {
   private processMiscIdentifierTokens() {
 
     this.tokenStart();
-    while (Character.isCobolWordPart(this.sourcecode.getCurrentChar())) {
+    while (Character.isCobolWordPart(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
     }
 
     if (Character.isNumeric(this.token.value)) {
       if (Character.isLevelIndicator(this.token.value)) {
-        this.token.type = "Level";
+        this.token.type = TokenType.Level;
       } else {
-        this.token.type = "NumericLiteral";
+        this.token.type = TokenType.NumericLiteral;
       }
     } else {
       if (Keyword.isKeyword(this.token.value)) {
-        this.token.type = "Keyword";
+        this.token.type = TokenType.Keyword;
       } else {
         if (Keyword.isExec(this.token.value)) {
-          this.token.type = "EXEC";
-          while (!Keyword.containsEndExec(this.token.value)) {
+          this.token.type = TokenType.EXEC;
+          while (!Keyword.containsEndExec(this.token.value) && !this.sourcecode.eof()) {
             this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
             this.sourcecode.NextChar();
           }
         } else {
           if (this.token.startColumnRelative >= 72) {
-            this.token.type = "IdentificationArea";
+            this.token.type = TokenType.IdentificationArea;
           } else {
-            this.token.type = "Identifier";
+            this.token.type = TokenType.Identifier;
           }
         }
       }
@@ -189,7 +190,7 @@ export class Lexer {
 
   private processTerminatorToken(): void {
     this.tokenStart();
-    this.token.type = "Terminator"
+    this.token.type = TokenType.Terminator;
     this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
     this.tokenEnd();
 
@@ -198,8 +199,8 @@ export class Lexer {
 
   private processNotIdentifiedToken(): void {
     this.tokenStart();
-    this.token.type = "NotIdentified"
-    while (this.sourcecode.getCurrentChar() !== ' ' && !Character.isLineTerminator(this.sourcecode.getCurrentChar())) {
+    this.token.type = TokenType.NotIdentified;
+    while (this.sourcecode.getCurrentChar() !== ' ' && !Character.isLineTerminator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof()) {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
     }
@@ -217,11 +218,11 @@ export class Lexer {
   private processStringToken(): void {
     this.tokenStart();
 
-    this.token.type = "StringLiteral";
+    this.token.type = TokenType.StringLiteral;
     do {
       this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
       this.sourcecode.NextChar();
-    } while (!Character.isStringIndicator(this.sourcecode.getCurrentChar()))
+    } while (!Character.isStringIndicator(this.sourcecode.getCurrentChar()) && !this.sourcecode.eof())
 
     // Still add the StringIndicator (' or ") to the chars value - TODO: Is there a better solution?
     this.token.value = this.token.value.concat(this.sourcecode.getCurrentChar());
