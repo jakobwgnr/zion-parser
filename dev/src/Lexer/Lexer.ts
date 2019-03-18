@@ -25,7 +25,6 @@ export class Lexer {
   private readonly sourcecode: SourceCode;
   private token: Token = new Token();
   private tokenList: Token[] = [];
-  private notTokenerized: string = "";
 
   constructor(code: string) {
     this.sourcecode = new SourceCode(code);
@@ -81,7 +80,6 @@ export class Lexer {
       // this.sourcecode.NextChar();
     }
 
-    logger.debug("finalized lexing");
     this.tokenList.push(new Token("", "EOF", 1, undefined, 1, this.sourcecode.columnsTotal, undefined, this.sourcecode.currentLine));
 
     return this.tokenList;

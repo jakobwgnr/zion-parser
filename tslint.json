@@ -2,5 +2,26 @@
     "extends": [
         "tslint:recommended",
         "tslint-config-prettier"
-    ]
+    ],
+    "rules": {
+        "interface-name": false,
+        "max-line-length": false,
+        "member-access": false,
+        "member-ordering": false,
+        "no-use-before-declare": true,
+        "object-literal-shorthand": false,
+        "object-literal-sort-keys": false,
+        "one-variable-per-declaration": false,
+        "prefer-for-of": false,
+        "trailing-comma": false,
+        "no-var-requires": false,
+        "whitespace": [
+            true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-separator",
+            "check-type"
+        ]
+    }
 }

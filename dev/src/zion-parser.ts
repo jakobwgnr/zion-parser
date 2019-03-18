@@ -14,6 +14,7 @@ import { Parser } from './Parser/Parser';
 import { Options } from './zion-parser-options';
 
 import * as path from 'path';
+require('debug').enable('zion-parser:*,-zion-parser:code-path');
 
 
 // ------------------------------------------------------------------------------
@@ -29,20 +30,21 @@ export function parse(input: string, options?: Options) {
     if (fscheck.isFile(input)) {
       fs.readFile(input, 'utf8', (error, data) => {
         const lexer = new Lexer(data);
-        const parser = new Parser();
         const tokens = lexer.execute();
+        const parser = new Parser(tokens);
 
-        return parser.execute(tokens);
+        return parser.execute();
       })
     } else {
       throw new Error('Not a file');
     }
   } else {
     const lexer = new Lexer(input);
-    const parser = new Parser();
     const tokens = lexer.execute();
+    const parser = new Parser(tokens);
 
-    return parser.execute(tokens);
+    console.log(input);
+    return parser.execute();
   }
 }
 

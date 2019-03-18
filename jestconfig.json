@@ -11,5 +11,10 @@
         "json",
         "node"
     ],
-    "collectCoverage": false
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "testPathIgnorePatterns": [
+        "/dist/",
+        "/node_modules/"
+    ]
 }

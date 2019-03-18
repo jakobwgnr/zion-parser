@@ -1,4 +1,5 @@
 import { Token } from '../Lexer/Token';
+import { Node } from '../Parser/nodes';
 import * as zionParser from '../zion-parser';
 
 describe('mock', () => {
@@ -8,10 +9,22 @@ describe('mock', () => {
 
         const fs = require('fs');
 
-        fs.writeFileSync("test.txt", tokenList.toString(), (err: any) => {
+        fs.writeFileSync("mock-lexoutput.txt", tokenList.toString(), (err: any) => {
             if (err) {
                 throw new Error("Error writing file");
             }
         });
     })
+
+    test('Zion-Parser.parse able to parse a COBOL statement', () => {
+        const nodeList: Node[] = zionParser.parse('RECORDING MODE IS F');
+
+        const fs = require('fs');
+
+        fs.writeFileSync("mock-parseoutput.txt", nodeList.toString(), (err: any) => {
+            if (err) {
+                throw new Error("Error writing file");
+            }
+        });
+    });
 })
