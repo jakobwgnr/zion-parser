@@ -13,8 +13,7 @@ export const Keyword = {
                     (wordUpper === 'SD') || (wordUpper === 'GO') || (wordUpper === 'NO') ||
                     (wordUpper === 'ON') || (wordUpper === 'OR') || (wordUpper === 'UP') ||
                     (wordUpper === 'AT') || (wordUpper === 'BY') || (wordUpper === 'IS') ||
-                    (wordUpper === 'RF') || (wordUpper === 'RH') || (wordUpper === 'TO')
-                    ;
+                    (wordUpper === 'RF') || (wordUpper === 'RH') || (wordUpper === 'TO');
             }
             case 3: {
                 return (wordUpper === 'ADD') || (wordUpper === 'ALL') || (wordUpper === 'CBL') ||
@@ -24,8 +23,7 @@ export const Keyword = {
                     (wordUpper === 'KEY') || (wordUpper === 'NOT') || (wordUpper === 'PIC') ||
                     (wordUpper === 'ARE') || (wordUpper === 'EOP') || (wordUpper === 'ESI') ||
                     (wordUpper === 'FOR') || (wordUpper === 'RUN') || (wordUpper === 'SUM') ||
-                    (wordUpper === 'TOP') || (wordUpper === 'USE')
-                    ;
+                    (wordUpper === 'TOP') || (wordUpper === 'USE');
             }
             case 4: {
                 return (wordUpper === 'CALL') || (wordUpper === 'CODE') || (wordUpper === 'DATA') ||
@@ -45,8 +43,7 @@ export const Keyword = {
                     (wordUpper === 'CORR') || (wordUpper === 'DOWN') || (wordUpper === 'EXIT') ||
                     (wordUpper === 'FROM') || (wordUpper === 'INTO') || (wordUpper === 'LOCK') ||
                     (wordUpper === 'MOVE') || (wordUpper === 'STOP') || (wordUpper === 'SYNC') ||
-                    (wordUpper === 'TRUE') || (wordUpper === 'TYPE')
-                    ;
+                    (wordUpper === 'TRUE') || (wordUpper === 'TYPE');
             }
             case 5: {
                 return (wordUpper === 'AFTER') || (wordUpper === 'BASIS') || (wordUpper === 'CLASS') ||
@@ -103,8 +100,7 @@ export const Keyword = {
                     (wordUpper === 'DISPLAY') || (wordUpper === 'DYNAMIC') || (wordUpper === 'INSPECT') ||
                     (wordUpper === 'INVALID') || (wordUpper === 'LINKAGE') || (wordUpper === 'NUMERIC') ||
                     (wordUpper === 'PROCEED') || (wordUpper === 'PROGRAM') || (wordUpper === 'RESERVE') ||
-                    (wordUpper === 'REWRITE') || (wordUpper === 'ROUNDED') || (wordUpper === 'VARYING')
-                    ;
+                    (wordUpper === 'REWRITE') || (wordUpper === 'ROUNDED') || (wordUpper === 'VARYING');
             } case 8: {
                 return (wordUpper === 'ALPHABET') || (wordUpper === 'CLASS-ID') || (wordUpper === 'CODE-SET') ||
                     (wordUpper === 'END-CALL') || (wordUpper === 'GENERATE') || (wordUpper === 'NEGATIVE') ||
@@ -119,8 +115,7 @@ export const Keyword = {
                     (wordUpper === 'EXTERNAL') || (wordUpper === 'FUNCTION') || (wordUpper === 'MULTIPLE') ||
                     (wordUpper === 'MULTIPLY') || (wordUpper === 'OVERFLOW') || (wordUpper === 'OVERRIDE') ||
                     (wordUpper === 'REVERSED') || (wordUpper === 'STANDARD') || (wordUpper === 'SUBTRACT') ||
-                    (wordUpper === 'SUPPRESS') || (wordUpper === 'SYMBOLIC') || (wordUpper === 'TRAILING')
-                    ;
+                    (wordUpper === 'SUPPRESS') || (wordUpper === 'SYMBOLIC') || (wordUpper === 'TRAILING');
             } case 9: {
                 return (wordUpper === 'ADVANCING') || (wordUpper === 'BEGINNING') || (wordUpper === 'CHARACTER') ||
                     (wordUpper === 'COLLATING') || (wordUpper === 'METACLASS') || (wordUpper === 'RECORDING') ||
@@ -131,8 +126,7 @@ export const Keyword = {
                     (wordUpper === 'JUSTIFIED') || (wordUpper === 'METHOD-ID') || (wordUpper === 'PROCEDURE') ||
                     (wordUpper === 'REMAINDER') || (wordUpper === 'REPLACING') || (wordUpper === 'REPORTING') ||
                     (wordUpper === 'ASCENDING') || (wordUpper === 'DISPLAY-1') || (wordUpper === 'EXCEPTION') ||
-                    (wordUpper === 'LOW-VALUE') || (wordUpper === 'RETURNING')
-                    ;
+                    (wordUpper === 'LOW-VALUE') || (wordUpper === 'RETURNING');
             } case 10: {
                 return (wordUpper === 'ALPHABETIC') || (wordUpper === 'CHARACTERS') || (wordUpper === 'DEBUG-ITEM') ||
                     (wordUpper === 'DEBUG-LINE') || (wordUpper === 'DEBUG-NAME') || (wordUpper === 'END-DELETE') ||
@@ -142,8 +136,7 @@ export const Keyword = {
                     (wordUpper === 'INITIALIZE') || (wordUpper === 'REPOSITORY') || (wordUpper === 'SORT-MERGE') ||
                     (wordUpper === 'CONVERTING') || (wordUpper === 'DUPLICATES') || (wordUpper === 'LOW-VALUES') ||
                     (wordUpper === 'PROCEDURES') || (wordUpper === 'PROCESSING') || (wordUpper === 'PROGRAM-ID') ||
-                    (wordUpper === 'STANDARD-1') || (wordUpper === 'STANDARD-2') || (wordUpper === 'WRITE-ONLY')
-                    ;
+                    (wordUpper === 'STANDARD-1') || (wordUpper === 'STANDARD-2') || (wordUpper === 'WRITE-ONLY');
             } case 11: {
                 return (wordUpper === 'CLOCK-UNITS') || (wordUpper === 'DAY-OF-WEEK') || (wordUpper === 'END-COMPUTE') ||
                     (wordUpper === 'I-O-CONTROL') || (wordUpper === 'DEBUG-SUB-1') || (wordUpper === 'DEBUG-SUB-2') ||
@@ -151,42 +144,34 @@ export const Keyword = {
                     (wordUpper === 'END-RECEIVE') || (wordUpper === 'END-REWRITE') || (wordUpper === 'SORT-RETURN') ||
                     (wordUpper === 'DESTINATION') || (wordUpper === 'ENVIRONMENT') || (wordUpper === 'HIGH-VALUES') ||
                     (wordUpper === 'MORE-LABELS') || (wordUpper === 'RETURN-CODE') || (wordUpper === 'SUB-QUEUE-1') ||
-                    (wordUpper === 'SUB-QUEUE-2') || (wordUpper === 'SUB-QUEUE-3')
-                    ;
+                    (wordUpper === 'SUB-QUEUE-2') || (wordUpper === 'SUB-QUEUE-3');
             } case 12: {
                 return (wordUpper === 'DATE-WRITTEN') || (wordUpper === 'END-EVALUATE') || (wordUpper === 'FILE-CONTROL') ||
                     (wordUpper === 'PAGE-COUNTER') || (wordUpper === 'ALPHANUMERIC') || (wordUpper === 'DECLARATIVES') ||
                     (wordUpper === 'END-MULTIPLY') || (wordUpper === 'END-SUBTRACT') || (wordUpper === 'END-UNSTRING') ||
                     (wordUpper === 'INPUT-OUTPUT') || (wordUpper === 'LINE-COUNTER') || (wordUpper === 'ORGANIZATION') ||
                     (wordUpper === 'SORT-CONTROL') || (wordUpper === 'SORT-MESSAGE') || (wordUpper === 'INSTALLATION') ||
-                    (wordUpper === 'SYNCHRONIZED')
-                    ;
+                    (wordUpper === 'SYNCHRONIZED');
             } case 13: {
                 return (wordUpper === 'DATE-COMPILED') || (wordUpper === 'NATIVE_BINARY') || (wordUpper === 'SEGMENT-LIMIT') ||
                     (wordUpper === 'WHEN-COMPILED') || (wordUpper === 'COMMUNICATION') || (wordUpper === 'COMPUTATIONAL') ||
                     (wordUpper === 'DECIMAL-POINT') || (wordUpper === 'SPECIAL-NAMES') || (wordUpper === 'CONFIGURATION') ||
-                    (wordUpper === 'CORRESPONDING') || (wordUpper === 'LOCAL-STORAGE')
-                    ;
+                    (wordUpper === 'CORRESPONDING') || (wordUpper === 'LOCAL-STORAGE');
             } case 14: {
                 return (wordUpper === 'DEBUG-CONTENTS') || (wordUpper === 'IDENTIFICATION') || (wordUpper === 'PACKED-DECIMAL') ||
                     (wordUpper === 'LINAGE-COUNTER') || (wordUpper === 'SORT-CORE-SIZE') || (wordUpper === 'SORT-FILE-SIZE') ||
-                    (wordUpper === 'SORT-MODE-SIZE') || (wordUpper === 'NUMERIC-EDITED')
-                    ;
+                    (wordUpper === 'SORT-MODE-SIZE') || (wordUpper === 'NUMERIC-EDITED');
             } case 15: {
                 return (wordUpper === 'OBJECT-COMPUTER') || (wordUpper === 'COMPUTATIONAL-1') || (wordUpper === 'COMPUTATIONAL-2') ||
                     (wordUpper === 'COMPUTATIONAL-3') || (wordUpper === 'COMPUTATIONAL-4') || (wordUpper === 'SOURCE-COMPUTER') ||
-                    (wordUpper === 'WORKING-STORAGE') || (wordUpper === 'COMPUTATIONAL-5')
-                    ;
+                    (wordUpper === 'WORKING-STORAGE') || (wordUpper === 'COMPUTATIONAL-5');
             } case 16: {
-                return (wordUpper === 'ALPHABETIC-LOWER') || (wordUpper === 'ALPHABETIC-UPPER')
-                    ;
+                return (wordUpper === 'ALPHABETIC-LOWER') || (wordUpper === 'ALPHABETIC-UPPER');
             }
             case 17: {
-                return (wordUpper === 'PROCEDURE-POINTER')
-                    ;
+                return (wordUpper === 'PROCEDURE-POINTER');
             } case 19: {
-                return (wordUpper === 'ALPHANUMERIC-EDITED')
-                    ;
+                return (wordUpper === 'ALPHANUMERIC-EDITED');
             }
             default: {
                 return false;
