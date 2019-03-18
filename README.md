@@ -9,4 +9,16 @@
 
 A typescript parser (and Lexer) implementation for COBOL
 
-Note: Currently no functionality. Just trying out JS/TS
+Note: This is currently just for trying out JS/TS myself & shouldn't be used anywhere.
+
+Anyways if you want to try it:
+
+```bash
+> npm install --save zion-parser
+```
+
+```js
+const zionParser = require('zion-parser');
+
+console.log(zionParser.lex('        IDENTIFICATION DIVISION.', { fromPath: false }));
+```

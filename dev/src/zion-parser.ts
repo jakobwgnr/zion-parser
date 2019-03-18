@@ -22,7 +22,7 @@ require('debug').enable('zion-parser:*,-zion-parser:code-path');
 // Public Interface
 // ------------------------------------------------------------------------------
 
-export function parse(input: string, options?: Options): Node[] {
+export function parse(input: string, options?: any): Node[] {
   if (!options) {
     options = new Options();
   }
@@ -39,7 +39,7 @@ export function parse(input: string, options?: Options): Node[] {
   return parser.execute();
 }
 
-export function lex(input: string, options?: Options) {
+export function lex(input: string, options?: any) {
   if (!options) {
     options = new Options();
   }
