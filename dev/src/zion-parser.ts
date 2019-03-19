@@ -34,7 +34,11 @@ export function parse(input: string, options?: any): Node[] {
 
   const lexer = new Lexer(code);
   const parser = new Parser(lexer.execute());
-  return parser.execute();
+  const program = parser.execute();
+  const ast = program as any;
+  ast.tokens = parser.tokens;
+  ast.errors = parser.errorHandler.errors;
+  return ast;
 }
 
 export function lex(input: string, options?: any) {

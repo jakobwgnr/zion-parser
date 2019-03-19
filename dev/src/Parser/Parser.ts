@@ -7,13 +7,12 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
-import { ErrorHandler } from './error-handler';
+import { ErrorHandler } from './ErrorHandler/error-handler';
 
 import { Token } from '../Lexer/Token';
 import { TokenType } from '../Lexer/tokentype';
 import * as Nodes from '../Parser/nodes';
 import { Node } from '../Parser/nodes';
-import { Messages } from './messages';
 import { Syntax } from './syntax';
 const debug = require('debug')('zion-parser:parser');
 
@@ -29,8 +28,8 @@ export class Parser {
   private index: number = 0;
   private currentToken: Token = new Token();
   private nodeList: Node[] = [];
-  private tokens: Token[];
-  private errorHandler: ErrorHandler;
+  public tokens: Token[];
+  public errorHandler: ErrorHandler;
 
   constructor(tokens: Token[]) {
     this.tokens = tokens;
@@ -146,7 +145,7 @@ export class Parser {
 
   expectKeyword(keyword: string, token: Token) {
     if (token.type !== TokenType.Keyword || token.value !== keyword) {
-      this.throwUnexpectedToken(token);
+      this.errorHandler.unexpectedTokenError(token);
     }
   }
 
@@ -155,37 +154,11 @@ export class Parser {
       token.type !== TokenType.Identifier ||
       !(token.value === 'F' || token.value === 'V' || token.value === 'U' || token.value === 'S')
     ) {
-      this.throwUnexpectedToken(token);
+      this.errorHandler.unexpectedTokenError(token);
     }
   }
 
   isOptionalKeyword(keyword: string, token: Token) {
     return token.type === TokenType.Keyword && token.value === keyword;
-  }
-
-  // Throw an exception because of the token.
-  unexpectedTokenError(token: Token, message?: string): Error {
-    let msg = message || Messages.UnexpectedToken;
-
-    if (!message) {
-      msg =
-        token.type === TokenType.EOF
-          ? Messages.UnexpectedEOS
-          : token.type === TokenType.Identifier
-          ? Messages.UnexpectedIdentifier
-          : token.type === TokenType.NumericLiteral
-          ? Messages.UnexpectedNumber
-          : token.type === TokenType.StringLiteral
-          ? Messages.UnexpectedString
-          : Messages.UnexpectedToken;
-    }
-
-    msg = msg.replace('%0', token.value);
-
-    return this.errorHandler.createError(token.startColumnTotal, token.startLine, token.endColumnRelative, msg);
-  }
-
-  throwUnexpectedToken(token: Token, message?: string): never {
-    throw this.unexpectedTokenError(token, message);
   }
 }
