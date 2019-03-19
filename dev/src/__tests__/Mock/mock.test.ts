@@ -1,7 +1,6 @@
 import { Token } from '../../Lexer/Token';
 import { Node } from '../../Parser/nodes';
 import * as zionParser from '../../zion-parser';
-import { Options } from '../../zion-parser-options';
 
 describe('mock', () => {
   test('Zion-Parser.lex able to lex a complete COBOL program', () => {
@@ -18,7 +17,7 @@ describe('mock', () => {
   });
 
   test('Zion-Parser.parse able to parse a COBOL statement', () => {
-    const nodeList: Node[] = zionParser.parse('RECORDING MODE IS F', new Options(false));
+    const nodeList: Node[] = zionParser.parse('RECORDING MODE IS F', { fromFile: false });
 
     const fs = require('fs');
 
