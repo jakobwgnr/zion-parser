@@ -1,6 +1,11 @@
 tsconfig.json
+jestconfig.json
+.prettierrc
+.coveralls.yml
 .travis.yml
-.nojekyll
+logs/
+.vscode/
+coverage/
 dev/
 docs/
 dist/test/

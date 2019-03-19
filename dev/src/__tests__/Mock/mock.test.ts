@@ -10,7 +10,7 @@ describe('mock', () => {
 
     const fs = require('fs');
 
-    fs.writeFileSync('mock-lexoutput.txt', tokenList.toString(), (err: any) => {
+    fs.writeFileSync('./__tests__/testfiles/mock-lexoutput.txt', tokenList.toString(), (err: any) => {
       if (err) {
         throw new Error('Error writing file');
       }
@@ -22,7 +22,7 @@ describe('mock', () => {
 
     const fs = require('fs');
 
-    fs.writeFileSync('mock-parseoutput.txt', nodeList.toString(), (err: any) => {
+    fs.writeFileSync('./__tests__/testfiles/mock-parseoutput.txt', nodeList.toString(), (err: any) => {
       if (err) {
         throw new Error('Error writing file');
       }
