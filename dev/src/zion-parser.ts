@@ -12,7 +12,6 @@ import * as fscheck from './util/fscheck';
 import { Lexer } from './Lexer/Lexer';
 import { Node } from './Parser/nodes';
 import { Parser } from './Parser/Parser';
-import { Options } from './zion-parser-options';
 
 import * as path from 'path';
 require('debug').enable('zion-parser:*,-zion-parser:code-path');
@@ -23,7 +22,7 @@ require('debug').enable('zion-parser:*,-zion-parser:code-path');
 
 export function parse(input: string, options?: any): Node[] {
   if (!options) {
-    options = new Options();
+    options = optionDefaults();
   }
   let code: string;
 
@@ -40,7 +39,7 @@ export function parse(input: string, options?: any): Node[] {
 
 export function lex(input: string, options?: any) {
   if (!options) {
-    options = new Options();
+    options = optionDefaults();
   }
   let code: string;
 
@@ -60,4 +59,10 @@ function codeFromPath(filePath: string): string {
   } else {
     throw new Error('Not a file');
   }
+}
+
+function optionDefaults(): any {
+  return {
+    fromPath: true, // By default input is read from Path
+  };
 }
