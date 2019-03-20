@@ -47,8 +47,6 @@ export class Parser {
             case 'RECORDING':
               node = this.parseRecordingModeClause();
               break;
-            default:
-              break;
           }
           this.nodeList.push(node);
           break;
@@ -67,9 +65,12 @@ export class Parser {
     let hasError: boolean = false;
     node.type = Syntax.RecordingModeClause;
     this.nextToken();
+    /* istanbul ignore else */
     if (this.isOptionalKeyword('MODE', this.currentToken)) {
       this.nextToken();
     }
+
+    /* istanbul ignore else */
     if (this.isOptionalKeyword('IS', this.currentToken)) {
       this.nextToken();
     }
@@ -123,10 +124,12 @@ export class Parser {
   // Expect the next token to match the specified keyword.
   // If not, an exception will be thrown.
 
-  expectKeyword(keyword: string, token: Token) {
+  expectKeyword(keyword: string, token: Token): boolean {
     if (token.type !== TokenType.Keyword || token.value !== keyword) {
       this.errorHandler.unexpectedTokenError(token, undefined, new Token(keyword, TokenType.Keyword));
+      return false;
     }
+    return true;
   }
 
   expectModeIdentifier(token: Token): boolean {
