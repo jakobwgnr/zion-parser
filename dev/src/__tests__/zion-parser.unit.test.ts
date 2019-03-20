@@ -1,6 +1,5 @@
-import { Node } from '../Parser/nodes';
-
 import { Token } from '../Lexer/Token';
+import { Ast } from '../Parser/Ast';
 import { Syntax } from '../Parser/syntax';
 import * as zionParser from '../zion-parser';
 
@@ -31,11 +30,11 @@ test('zionParser.parse throws error on no such file', () => {
 });
 
 test('zionParser.parse takes a String stdin as input', () => {
-  const nodeList: Node[] = zionParser.parse('RECORDING MODE IS F', { fromPath: false });
-  expect(nodeList[0].type).toBe(Syntax.RecordingModeClause);
+  const ast: Ast = zionParser.parse('RECORDING MODE IS F', { fromPath: false });
+  expect(ast.nodes[0].type).toBe(Syntax.RecordingModeClause);
 });
 
 test('zionParser.parse takes a path as input', () => {
-  const nodeList: Node[] = zionParser.parse('./__tests__/testfiles/recording.cbl');
-  expect(nodeList[0].type).toBe(Syntax.RecordingModeClause);
+  const ast: Ast = zionParser.parse('./__tests__/testfiles/recording.cbl');
+  expect(ast.nodes[0].type).toBe(Syntax.RecordingModeClause);
 });
