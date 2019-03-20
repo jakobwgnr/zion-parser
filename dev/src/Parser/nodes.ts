@@ -7,9 +7,7 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
-import { Token } from '../Lexer/Token';
-import { SourceLocation } from './source-location';
-import { Syntax } from './syntax';
+// import { Syntax } from './syntax';
 
 // ------------------------------------------------------------------------------
 // Helpers
@@ -22,6 +20,7 @@ import { Syntax } from './syntax';
 /* tslint:disable:max-classes-per-file */
 
 export class Node {
+  public hasError: boolean = false;
   public type: string = '';
   public startColumnTotal: number = 0;
   public startColumnRelative: number = 0;
@@ -30,19 +29,13 @@ export class Node {
   public endColumnRelative: number = 0;
   public endLine: number = 0;
 
-  public tokenList: Token[] = [];
   constructor(startColumnTotal: number, startColumnRelative: number, startLine: number) {
-    if (startColumnTotal) {
-      this.startColumnTotal = startColumnTotal;
-    }
-    if (startColumnRelative) {
-      this.startColumnRelative = startColumnRelative;
-    }
-    if (startLine) {
-      this.startLine = startLine;
-    }
+    this.startColumnTotal = startColumnTotal;
+    this.startColumnRelative = startColumnRelative;
+    this.startLine = startLine;
   }
 
+  /* istanbul ignore next */
   public toString = (): string => {
     return `Node (type: ${this.type},
             startColumnTotal: ${this.startColumnTotal},
@@ -51,7 +44,7 @@ export class Node {
             endColumnRelative: ${this.endColumnRelative},
             startLine: ${this.startLine},
             endLine: ${this.endLine}),
-            includedTokens: ${this.tokenList}
+            hasError: ${this.hasError}
             \r\n`;
   };
 }

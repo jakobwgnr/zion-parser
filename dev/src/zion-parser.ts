@@ -6,21 +6,21 @@
 // ------------------------------------------------------------------------------
 // Requirements
 // ------------------------------------------------------------------------------
+require('debug').enable('zion-parser:*,-zion-parser:code-path');
 import * as fs from 'fs';
 import * as fscheck from './util/fscheck';
 
 import { Lexer } from './Lexer/Lexer';
-import { Node } from './Parser/nodes';
 import { Parser } from './Parser/Parser';
 
 import * as path from 'path';
-require('debug').enable('zion-parser:*,-zion-parser:code-path');
+import { Ast } from './Parser/Ast';
 
 // ------------------------------------------------------------------------------
 // Public Interface
 // ------------------------------------------------------------------------------
 
-export function parse(input: string, options?: any): Node[] {
+export function parse(input: string, options?: any): Ast {
   if (!options) {
     options = optionDefaults();
   }
@@ -34,10 +34,8 @@ export function parse(input: string, options?: any): Node[] {
 
   const lexer = new Lexer(code);
   const parser = new Parser(lexer.execute());
-  const program = parser.execute();
-  const ast = program as any;
-  ast.tokens = parser.tokens;
-  ast.errors = parser.errorHandler.errors;
+  const nodes = parser.execute();
+  const ast: Ast = new Ast(nodes, parser.tokens, parser.errorHandler.errors);
   return ast;
 }
 

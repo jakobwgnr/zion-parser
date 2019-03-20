@@ -8,17 +8,22 @@ export class ErrorHandler {
     this.errors = [];
   }
 
-  private countError(index: number, line: number, col: number, description: string) {
-    const msg = 'Line ' + line + ': ' + description;
-    const error = new ParseError(msg, index, line, col, description);
-    this.errors.push(error);
-  }
-
-  public unexpectedTokenError(token: Token, message?: string) {
-    if (!message) {
-      message = 'Unexpected Token Type: ' + token.type + '; Value: ' + token.value;
+  public unexpectedTokenError(receivedtoken: Token, description?: string, expectedToken?: Token) {
+    if (!description) {
+      description = 'Unexpected Token Type: ' + receivedtoken.type + '; Value: ' + receivedtoken.value;
     }
-
-    this.countError(token.startColumnTotal, token.startLine, token.startColumnRelative, message);
+    const message = 'Line ' + receivedtoken.startLine + ': ' + description;
+    const error = new ParseError(
+      message,
+      receivedtoken.startColumnTotal,
+      receivedtoken.startLine,
+      receivedtoken.startColumnRelative,
+      description,
+      receivedtoken.value,
+      expectedToken ? expectedToken.value : undefined,
+      receivedtoken.type,
+      expectedToken ? expectedToken.type : undefined,
+    );
+    this.errors.push(error);
   }
 }

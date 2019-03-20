@@ -7,7 +7,7 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
-import * as logger from '../config/winston';
+// import * as logger from '../config/winston';
 import { Character } from './character';
 import { Keyword } from './keyword';
 import { SourceCode } from './Sourcecode';

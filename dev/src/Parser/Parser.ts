@@ -7,6 +7,7 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
+// const debug = require('debug')('zion-parser:parser');
 import { ErrorHandler } from './ErrorHandler/error-handler';
 
 import { Token } from '../Lexer/Token';
@@ -14,7 +15,6 @@ import { TokenType } from '../Lexer/tokentype';
 import * as Nodes from '../Parser/nodes';
 import { Node } from '../Parser/nodes';
 import { Syntax } from './syntax';
-const debug = require('debug')('zion-parser:parser');
 
 // ------------------------------------------------------------------------------
 // Helpers
@@ -25,7 +25,7 @@ const debug = require('debug')('zion-parser:parser');
 // ------------------------------------------------------------------------------
 
 export class Parser {
-  private index: number = 0;
+  private index: number = -1;
   private currentToken: Token = new Token();
   private nodeList: Node[] = [];
   public tokens: Token[];
@@ -38,69 +38,49 @@ export class Parser {
   }
 
   public execute(): Node[] {
-    this.nodeList.push(this.parseRecordingModeClause());
-
-    // while (this.tokens.length <= this.index) {
-    //   let node: any = '';
-    //   switch (this.currentToken.type) {
-    //     case TokenType.Keyword:
-    //       switch (this.currentToken.value.toUpperCase()) {
-    //         case 'RECORDING':
-    //           node = this.parseRecordingModeClause();
-    //           break;
-    //       }
-    //       break;
-    //     case TokenType.WhiteSpace:
-    //       break;
-    //     case TokenType.SequenceNumberLiteral:
-    //       break;
-    //     case TokenType.Comment:
-    //       break;
-    //     case TokenType.NumericLiteral:
-    //       break;
-    //     case TokenType.Operator:
-    //       break;
-    //     case TokenType.Level:
-    //       break;
-    //     case TokenType.EXEC:
-    //       break;
-    //     case TokenType.IdentificationArea:
-    //       break;
-    //     case TokenType.Identifier:
-    //       break;
-    //     case TokenType.StringLiteral:
-    //       break;
-    //     default:
-    //       break;
-    //   }
-    //   this.nodeList.push(node);
-    //   this.nextToken();
-    // }
+    this.nextToken();
+    while (this.index !== this.tokens.length) {
+      let node: any = '';
+      switch (this.currentToken.type) {
+        case TokenType.Keyword:
+          switch (this.currentToken.value.toUpperCase()) {
+            case 'RECORDING':
+              node = this.parseRecordingModeClause();
+              break;
+            default:
+              break;
+          }
+          this.nodeList.push(node);
+          break;
+        default:
+          this.errorHandler.unexpectedTokenError(this.currentToken, undefined, new Token('any', TokenType.Keyword));
+          break;
+      }
+      this.nextToken();
+    }
 
     return this.nodeList;
   }
 
   private parseRecordingModeClause(): Nodes.RecordingModeClause {
     const node = this.startNode(this.currentToken);
+    let hasError: boolean = false;
     node.type = Syntax.RecordingModeClause;
     this.nextToken();
     if (this.isOptionalKeyword('MODE', this.currentToken)) {
-      node.tokenList.push(this.currentToken);
       this.nextToken();
     }
     if (this.isOptionalKeyword('IS', this.currentToken)) {
-      node.tokenList.push(this.currentToken);
       this.nextToken();
     }
 
-    debug(this.currentToken.toString());
-    this.expectModeIdentifier(this.currentToken);
-    node.tokenList.push(this.currentToken);
+    hasError = !this.expectModeIdentifier(this.currentToken);
 
     return this.finalizeNode(
       node,
       new Nodes.RecordingModeClause(node.startColumnTotal, node.startColumnRelative, node.startLine),
       this.currentToken,
+      hasError,
     );
   }
 
@@ -110,7 +90,7 @@ export class Parser {
   private nextToken() {
     this.index++;
     this.currentToken = this.tokens[this.index];
-    if (this.isIrrelevantToken(this.currentToken)) {
+    if (this.currentToken && this.isIrrelevantToken(this.currentToken)) {
       this.nextToken();
     }
   }
@@ -120,22 +100,22 @@ export class Parser {
       token.type === TokenType.Comment ||
       token.type === TokenType.IdentificationArea ||
       token.type === TokenType.SequenceNumberLiteral ||
-      token.type === TokenType.WhiteSpace
+      token.type === TokenType.WhiteSpace ||
+      token.type === TokenType.EOF
     );
   }
 
   private startNode(token: Token) {
     const node = new Node(token.startColumnTotal, token.startColumnRelative, token.startLine);
-    node.tokenList.push(token);
     return node;
   }
 
-  private finalizeNode(startNode: Node, node: any, endToken: Token) {
+  private finalizeNode(startNode: Node, node: any, endToken: Token, hasError: boolean) {
     node.endColumnRelative = endToken.endColumnRelative;
     node.endColumnTotal = endToken.endColumnTotal;
     node.endLine = endToken.endLine;
-    node.tokenList = startNode.tokenList;
     node.type = startNode.type;
+    node.hasError = hasError;
 
     return node;
   }
@@ -145,17 +125,19 @@ export class Parser {
 
   expectKeyword(keyword: string, token: Token) {
     if (token.type !== TokenType.Keyword || token.value !== keyword) {
-      this.errorHandler.unexpectedTokenError(token);
+      this.errorHandler.unexpectedTokenError(token, undefined, new Token(keyword, TokenType.Keyword));
     }
   }
 
-  expectModeIdentifier(token: Token) {
+  expectModeIdentifier(token: Token): boolean {
     if (
       token.type !== TokenType.Identifier ||
       !(token.value === 'F' || token.value === 'V' || token.value === 'U' || token.value === 'S')
     ) {
-      this.errorHandler.unexpectedTokenError(token);
+      this.errorHandler.unexpectedTokenError(token, undefined, new Token('F or V or U or S', 'ModeIdentifier'));
+      return false;
     }
+    return true;
   }
 
   isOptionalKeyword(keyword: string, token: Token) {
