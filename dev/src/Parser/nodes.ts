@@ -47,9 +47,15 @@ export class Node {
             hasError: ${this.hasError}
             \r\n`;
   };
+
+  public setHasError(hasError: boolean) {
+    // if once set to true it will stay to true
+    this.hasError = this.hasError ? true : hasError;
+  }
 }
 
 export class RecordingModeClause extends Node {}
+export class ProgramId extends Node {}
 
 // export type ConfigurationSectionParagraph = SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph;
 // export type SpecialNamesParagraphClause = AlphabetClause | SymbolicCharactersClause | ClassClause | CurrencySignClause | DecimalPointClause;
