@@ -54,6 +54,14 @@ export class Node {
   }
 }
 
+export class CobolSourceProgram extends Node {
+  readonly programId: ProgramId;
+
+  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, programId: ProgramId) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.programId = programId;
+  }
+}
 export class RecordingModeClause extends Node {}
 export class ProgramId extends Node {}
 

@@ -45,7 +45,7 @@ export class Parser {
           switch (this.currentToken.value) {
             case 'IDENTIFICATION':
             case 'ID':
-              // node = this.parseCobolSourceProgram();
+              node = this.parseCobolSourceProgram();
               break;
             case 'PROGRAM-ID':
               node = this.parseProgramId();
@@ -71,6 +71,23 @@ export class Parser {
     }
 
     return this.nodeList;
+  }
+
+  private parseCobolSourceProgram(): Nodes.CobolSourceProgram {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.CobolSourceProgram;
+    this.nextToken();
+    node.setHasError(this.expectKeyword('DIVISION', this.currentToken));
+    this.nextToken();
+    node.setHasError(this.expectTerminator(this.currentToken));
+    this.nextToken();
+    const programId: Nodes.ProgramId = this.parseProgramId();
+
+    return this.finalizeNode(
+      node,
+      new Nodes.CobolSourceProgram(node.startColumnTotal, node.startColumnRelative, node.startLine, programId),
+      this.currentToken,
+    );
   }
 
   private parseRecordingModeClause(): Nodes.RecordingModeClause {
@@ -213,6 +230,14 @@ export class Parser {
   expectIdentifier(token: Token): boolean {
     if (token.type !== TokenType.Identifier) {
       this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.Identifier));
+      return false;
+    }
+    return true;
+  }
+
+  expectTerminator(token: Token) {
+    if (token.type !== TokenType.Terminator) {
+      this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.Terminator));
       return false;
     }
     return true;
