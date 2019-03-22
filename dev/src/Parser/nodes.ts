@@ -62,8 +62,8 @@ export class CobolSourceProgram extends Node {
     this.programId = programId;
   }
 }
-export class RecordingModeClause extends Node {}
 export class ProgramId extends Node {}
+export class RecordingModeClause extends Node {}
 
 // export type ConfigurationSectionParagraph = SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph;
 // export type SpecialNamesParagraphClause = AlphabetClause | SymbolicCharactersClause | ClassClause | CurrencySignClause | DecimalPointClause;
