@@ -7,7 +7,7 @@
 [coverage-image]: https://coveralls.io/repos/github/jakobwgnr/zion-parser/badge.svg
 [coverage-url]: https://coveralls.io/github/jakobwgnr/zion-parser
 
-A typescript parser (and Lexer) implementation for COBOL
+A typescript parser implementation for COBOL
 
 **Note**: This is currently just for trying out JS/TS myself and playing around with CI etc (therefore public) & shouldn't be used anywhere productive
 
@@ -20,7 +20,7 @@ $ npm install --save zion-parser
 ```js
 const zionParser = require('zion-parser');
 
-console.log(zionParser.lex('        IDENTIFICATION DIVISION.', { fromPath: false }));
+console.log(zionParser.parse('        IDENTIFICATION DIVISION.', { fromPath: false }));
 ```
 
 ## Development (Notes)

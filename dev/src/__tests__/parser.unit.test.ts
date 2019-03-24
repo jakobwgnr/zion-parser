@@ -1,9 +1,9 @@
-import { Token } from '../../Lexer/Token';
-import { TokenType } from '../../Lexer/tokentype';
-import { Ast } from '../../Parser/Ast';
-import { Parser } from '../../Parser/Parser';
+import { Token } from 'zion-lexer';
+import { TokenType } from 'zion-lexer';
+import { Ast } from '../Ast';
+import { Parser } from '../Parser';
 
-import * as zionParser from '../../zion-parser';
+import * as zionParser from '../zion-parser';
 
 describe('Helper Functionality', () => {
   test('Validations work correctly', () => {

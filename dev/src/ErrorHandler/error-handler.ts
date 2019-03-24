@@ -1,4 +1,4 @@
-import { Token } from '../../Lexer/Token';
+import { Token } from 'zion-lexer';
 import { ParseError } from './parse-error';
 
 export class ErrorHandler {

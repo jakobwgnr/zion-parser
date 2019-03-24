@@ -1,6 +1,6 @@
-import { ErrorHandler } from '../../../Parser/ErrorHandler/error-handler';
+import { ErrorHandler } from '../../ErrorHandler/error-handler';
 
-import { Token } from '../../../Lexer/Token';
+import { Token } from 'zion-lexer';
 
 test('ParseError constructor works expected', () => {
   const errorHandler: ErrorHandler = new ErrorHandler();

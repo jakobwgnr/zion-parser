@@ -1,7 +1,7 @@
-import { Token } from '../../Lexer/Token';
-import { Ast } from '../../Parser/Ast';
-import { ParseError } from '../../Parser/ErrorHandler/parse-error';
-import { Node } from '../../Parser/nodes';
+import { Token } from 'zion-lexer';
+import { Ast } from '../Ast';
+import { ParseError } from '../ErrorHandler/parse-error';
+import { Node } from '../nodes';
 
 test('Ast Constructor works expected', () => {
   const nodes: Node[] = [];

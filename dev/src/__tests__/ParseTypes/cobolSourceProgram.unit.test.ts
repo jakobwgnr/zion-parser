@@ -1,6 +1,6 @@
-import { Ast } from '../../../Parser/Ast';
-import { Syntax } from '../../../Parser/syntax';
-import * as zionParser from '../../../zion-parser';
+import { Ast } from '../../Ast';
+import { Syntax } from '../../syntax';
+import * as zionParser from '../../zion-parser';
 
 describe('parseCobolSourceProgram working correctly', () => {
   test('Full statement', () => {

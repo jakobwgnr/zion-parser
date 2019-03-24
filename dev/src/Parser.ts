@@ -10,10 +10,10 @@
 // const debug = require('debug')('zion-parser:parser');
 import { ErrorHandler } from './ErrorHandler/error-handler';
 
-import { Token } from '../Lexer/Token';
-import { TokenType } from '../Lexer/tokentype';
-import * as Nodes from '../Parser/nodes';
-import { Node } from '../Parser/nodes';
+import { Token } from 'zion-lexer';
+import { TokenType } from 'zion-lexer';
+import * as Nodes from './nodes';
+import { Node } from './nodes';
 import { Syntax } from './syntax';
 
 // ------------------------------------------------------------------------------

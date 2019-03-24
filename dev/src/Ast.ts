@@ -1,4 +1,4 @@
-import { Token } from '../Lexer/Token';
+import { Token } from 'zion-lexer';
 import { ParseError } from './ErrorHandler/parse-error';
 import { Node } from './nodes';
 

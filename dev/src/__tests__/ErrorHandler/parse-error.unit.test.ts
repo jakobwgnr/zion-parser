@@ -1,4 +1,4 @@
-import { ParseError } from '../../../Parser/ErrorHandler/parse-error';
+import { ParseError } from '../../ErrorHandler/parse-error';
 
 test('ParseError constructor works expected', () => {
   const error: ParseError = new ParseError(

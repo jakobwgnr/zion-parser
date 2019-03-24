@@ -1,4 +1,4 @@
-import { Node } from '../../Parser/nodes';
+import { Node } from '../nodes';
 
 test('Node Constructor works expected', () => {
   const node: Node = new Node(1, 2, 3);
