@@ -62,7 +62,39 @@ export class CobolSourceProgram extends Node {
     this.programId = programId;
   }
 }
-export class ProgramId extends Node {}
+export class ProgramId extends Node {
+  readonly programIdValue: string;
+  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, programIdValue: string) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.programIdValue = programIdValue;
+  }
+}
+
+export class IdentificationDivisionContent extends Node {
+  readonly author: string;
+  readonly installation: string;
+  readonly dateWritten: string;
+  readonly dateCompiled: string;
+  readonly security: string;
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    author: string,
+    installation: string,
+    dateWritten: string,
+    dateCompiled: string,
+    security: string,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.author = author;
+    this.installation = installation;
+    this.dateWritten = dateWritten;
+    this.dateCompiled = dateCompiled;
+    this.security = security;
+  }
+}
+
 export class RecordingModeClause extends Node {}
 
 // export type ConfigurationSectionParagraph = SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph;

@@ -55,19 +55,22 @@ export class Parser {
             case 'DATE-WRITTEN':
             case 'DATE-COMPILED':
             case 'SECURITY':
-              // node = this.parseIdentificationDivisionContent();
+              node = this.parseIdentificationDivisionContent();
               break;
             case 'RECORDING':
               node = this.parseRecordingModeClause();
+              break;
+            default:
+              this.nextToken();
               break;
           }
           this.nodeList.push(node);
           break;
         default:
           this.errorHandler.unexpectedTokenError(this.currentToken, undefined, new Token('any', TokenType.Keyword));
+          this.nextToken();
           break;
       }
-      this.nextToken();
     }
 
     return this.nodeList;
@@ -91,16 +94,151 @@ export class Parser {
     );
   }
 
-  // private parseIdentificationDivisionContent(): Nodes.RecordingModeClause {
-  //   const node = this.startNode(this.currentToken);
-  //   node.type = Syntax.IdentificationDivisionContent;
+  private parseIdentificationDivisionContent(): Nodes.IdentificationDivisionContent {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.IdentificationDivisionContent;
+    let author: string = '';
+    let installation: string = '';
+    let dateWritten: string = '';
+    let dateCompiled: string = '';
+    let security: string = '';
 
-  //   return this.finalizeNode(
-  //     node,
-  //     new Nodes.RecordingModeClause(node.startColumnTotal, node.startColumnRelative, node.startLine),
-  //     this.currentToken,
-  //   );
-  // }
+    /* istanbul ignore else */
+    if (this.isOptionalKeyword('AUTHOR', this.currentToken)) {
+      this.nextToken();
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.expectIdentifier(this.currentToken)) {
+        author = author.concat(this.currentToken.value);
+        this.nextToken();
+        while (this.currentToken.type === TokenType.Identifier) {
+          author = author.concat(' ', this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+        this.nextToken();
+      }
+
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+    }
+
+    /* istanbul ignore else */
+    if (this.isOptionalKeyword('INSTALLATION', this.currentToken)) {
+      this.nextToken();
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.expectIdentifier(this.currentToken)) {
+        installation = installation.concat(this.currentToken.value);
+        this.nextToken();
+        while (this.currentToken.type === TokenType.Identifier) {
+          installation = installation.concat(' ', this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+      }
+
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+    }
+
+    /* istanbul ignore else */
+    if (this.isOptionalKeyword('DATE-WRITTEN', this.currentToken)) {
+      this.nextToken();
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.expectIdentifier(this.currentToken)) {
+        dateWritten = dateWritten.concat(this.currentToken.value);
+        this.nextToken();
+        while (this.currentToken.type === TokenType.Identifier) {
+          dateWritten = dateWritten.concat(' ', this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+      }
+
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+    }
+
+    /* istanbul ignore else */
+    if (this.isOptionalKeyword('DATE-COMPILED', this.currentToken)) {
+      this.nextToken();
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.expectIdentifier(this.currentToken)) {
+        dateCompiled = dateCompiled.concat(this.currentToken.value);
+        this.nextToken();
+        while (this.currentToken.type === TokenType.Identifier) {
+          dateCompiled = dateCompiled.concat(' ', this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+      }
+
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+    }
+
+    /* istanbul ignore else */
+    if (this.isOptionalKeyword('SECURITY', this.currentToken)) {
+      this.nextToken();
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.expectIdentifier(this.currentToken)) {
+        security = security.concat(this.currentToken.value);
+        this.nextToken();
+        while (this.currentToken.type === TokenType.Identifier) {
+          security = security.concat(' ', this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+      }
+
+      /* istanbul ignore else */
+      if (this.isOptionalTerminator(this.currentToken)) {
+        this.nextToken();
+      }
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.IdentificationDivisionContent(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        author,
+        installation,
+        dateWritten,
+        dateCompiled,
+        security,
+      ),
+      this.currentToken,
+    );
+  }
 
   private parseRecordingModeClause(): Nodes.RecordingModeClause {
     const node = this.startNode(this.currentToken);
@@ -117,6 +255,7 @@ export class Parser {
     }
 
     node.setHasError(!this.expectModeIdentifier(this.currentToken));
+    this.nextToken();
 
     return this.finalizeNode(
       node,
@@ -130,13 +269,19 @@ export class Parser {
     startNode.type = Syntax.ProgramId;
     let initialRequired: boolean = false;
     let initialExists: boolean = false;
+    let programIdValue: string = '';
+
     this.nextToken();
     /* istanbul ignore else */
     if (this.isOptionalTerminator(this.currentToken)) {
       this.nextToken();
     }
 
-    startNode.setHasError(!this.expectIdentifier(this.currentToken));
+    if (this.expectIdentifier(this.currentToken)) {
+      programIdValue = this.currentToken.value;
+    } else {
+      startNode.setHasError(true);
+    }
     this.nextToken();
 
     /* istanbul ignore else */
@@ -175,7 +320,12 @@ export class Parser {
 
     return this.finalizeNode(
       startNode,
-      new Nodes.RecordingModeClause(startNode.startColumnTotal, startNode.startColumnRelative, startNode.startLine),
+      new Nodes.ProgramId(
+        startNode.startColumnTotal,
+        startNode.startColumnRelative,
+        startNode.startLine,
+        programIdValue,
+      ),
       this.currentToken,
     );
   }
