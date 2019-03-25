@@ -17,6 +17,9 @@ describe('Helper Functionality', () => {
     expect(parser.isOptionalTerminator(new Token('', TokenType.Terminator))).toBeTruthy();
     expect(parser.isOptionalTerminator(new Token('IS', TokenType.Keyword))).toBeFalsy();
 
+    expect(parser.isOptionalIdentifier(new Token('PGMNAME', TokenType.Identifier))).toBeTruthy();
+    expect(parser.isOptionalIdentifier(new Token('IS', TokenType.Keyword))).toBeFalsy();
+
     expect(parser.expectModeIdentifier(new Token('F', TokenType.Identifier))).toBeTruthy();
     expect(parser.expectModeIdentifier(new Token('V', TokenType.Identifier))).toBeTruthy();
     expect(parser.expectModeIdentifier(new Token('U', TokenType.Identifier))).toBeTruthy();
@@ -26,11 +29,18 @@ describe('Helper Functionality', () => {
     expect(parser.expectIdentifier(new Token('Value', TokenType.Identifier))).toBeTruthy();
     expect(parser.expectIdentifier(new Token('Keyword', TokenType.Keyword))).toBeFalsy();
 
+    expect(parser.expectNumeric(new Token('123', TokenType.NumericLiteral))).toBeTruthy();
+    expect(parser.expectNumeric(new Token('Keyword', TokenType.Keyword))).toBeFalsy();
+
     expect(parser.expectTerminator(new Token('', TokenType.Terminator))).toBeTruthy();
     expect(parser.expectTerminator(new Token('Keyword', TokenType.Keyword))).toBeFalsy();
 
     expect(parser.expectKeyword('TRUE', new Token('TRUE', TokenType.Keyword))).toBeTruthy();
     expect(parser.expectKeyword('FALSE', new Token('TEST', TokenType.Keyword))).toBeFalsy();
+
+    expect(parser.expectSeveralKeywords(['TRUE', 'FALSE'], new Token('TRUE', TokenType.Keyword))).toBeTruthy();
+    expect(parser.expectSeveralKeywords(['TRUE', 'FALSE'], new Token('FALSE', TokenType.Keyword))).toBeTruthy();
+    expect(parser.expectSeveralKeywords(['TRUE', 'FALSE'], new Token('TEST', TokenType.Keyword))).toBeFalsy();
   });
 
   test('Nodes always start with a keyword so Identifier should create an error', () => {

@@ -26,6 +26,8 @@ export const Syntax = {
   CurrencySignClause: 'CurrencySignClause',
   DecimalPointClause: 'DecimalPointClause',
 
+  InputOutputSection: 'InputOutputSection',
+
   FileControlParagraph: 'FileControlParagraph',
   FileControlEntry: 'FileControlEntry',
   SelectClause: 'SelectClause',

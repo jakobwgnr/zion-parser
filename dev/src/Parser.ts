@@ -57,8 +57,19 @@ export class Parser {
             case 'SECURITY':
               node = this.parseIdentificationDivisionContent();
               break;
+            case 'ENVIRONMENT':
+              node = this.parseEnvironmentDivisionContent();
             case 'RECORDING':
               node = this.parseRecordingModeClause();
+              break;
+            case 'CONFIGURATION':
+              node = this.parseConfigurationSection();
+              break;
+            case 'SOURCE-COMPUTER':
+              node = this.parseSourceComputerParagraph();
+              break;
+            case 'OBJECT-COMPUTER':
+              node = this.parseObjectComputerParagraph();
               break;
             default:
               this.nextToken();
@@ -80,16 +91,26 @@ export class Parser {
   private parseCobolSourceProgram(): Nodes.CobolSourceProgram {
     const node = this.startNode(this.currentToken);
     node.type = Syntax.CobolSourceProgram;
+
     this.nextToken();
     node.setHasError(this.expectKeyword('DIVISION', this.currentToken));
     this.nextToken();
     node.setHasError(this.expectTerminator(this.currentToken));
     this.nextToken();
     const programId: Nodes.ProgramId = this.parseProgramId();
-
+    const identificationDivisionContent: Nodes.IdentificationDivisionContent = this.parseIdentificationDivisionContent();
+    node.setHasError(this.expectKeyword('ENVIRONMENT', this.currentToken));
+    const environmentDivisionContent: Nodes.EnvironmentDivisionContent = this.parseEnvironmentDivisionContent();
     return this.finalizeNode(
       node,
-      new Nodes.CobolSourceProgram(node.startColumnTotal, node.startColumnRelative, node.startLine, programId),
+      new Nodes.CobolSourceProgram(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        programId,
+        identificationDivisionContent,
+        environmentDivisionContent,
+      ),
       this.currentToken,
     );
   }
@@ -240,6 +261,248 @@ export class Parser {
     );
   }
 
+  // TODO test missing
+  private parseEnvironmentDivisionContent(): Nodes.EnvironmentDivisionContent {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.EnvironmentDivisionContent;
+    let configurationSection: Nodes.ConfigurationSection | undefined;
+    let inputOutputSection: Nodes.InputOutputSection | undefined;
+
+    this.nextToken();
+    node.setHasError(this.expectKeyword('DIVISION', this.currentToken));
+    this.nextToken();
+    node.setHasError(this.expectTerminator(this.currentToken));
+    this.nextToken();
+
+    if (this.isOptionalKeyword('CONFIGURATION', this.currentToken)) {
+      configurationSection = this.parseConfigurationSection();
+    }
+
+    if (this.isOptionalKeyword('INPUT-OUTPUT', this.currentToken)) {
+      inputOutputSection = this.parseInputOutputSection();
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.EnvironmentDivisionContent(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        configurationSection,
+        inputOutputSection,
+      ),
+      this.currentToken,
+    );
+  }
+
+  // TODO: impl + test missing
+  private parseConfigurationSection(): Nodes.ConfigurationSection | undefined {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.ConfigurationSection;
+    let sourceComputerParagraph: Nodes.SourceComputerParagraph | undefined;
+    let objectComputerParagraph: Nodes.ObjectComputerParagraph | undefined;
+    // TODO: Workaround for test...
+    const specialNamesParagraph: Nodes.SpecialNamesParagraph | undefined = undefined;
+
+    this.nextToken();
+    node.setHasError(this.expectKeyword('SECTION', this.currentToken));
+
+    if (this.isOptionalKeyword('SOURCE-COMPUTER', this.currentToken)) {
+      sourceComputerParagraph = this.parseSourceComputerParagraph();
+    }
+
+    if (this.isOptionalKeyword('OBJECT-COMPUTER', this.currentToken)) {
+      objectComputerParagraph = this.parseObjectComputerParagraph();
+    }
+
+    if (this.isOptionalKeyword('OBJECT-COMPUTER', this.currentToken)) {
+      // specialNamesParagraph = this.parseSpecialNamesParagraph();
+    }
+
+    if (
+      sourceComputerParagraph === undefined &&
+      objectComputerParagraph === undefined &&
+      specialNamesParagraph === undefined
+    ) {
+      return undefined;
+    } else {
+      return this.finalizeNode(
+        node,
+        new Nodes.ConfigurationSection(
+          node.startColumnTotal,
+          node.startColumnRelative,
+          node.startLine,
+          sourceComputerParagraph,
+          objectComputerParagraph,
+          specialNamesParagraph,
+        ),
+        this.currentToken,
+      );
+    }
+  }
+
+  private parseSourceComputerParagraph(): Nodes.SourceComputerParagraph {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.SourceComputerParagraph;
+    let sourceComputerValue: string | undefined;
+
+    this.nextToken();
+    node.setHasError(this.expectTerminator(this.currentToken));
+    this.nextToken();
+
+    if (this.isOptionalIdentifier(this.currentToken)) {
+      sourceComputerValue = this.currentToken.value;
+      this.nextToken();
+      if (this.isOptionalKeyword('WITH', this.currentToken)) {
+        this.nextToken();
+        node.setHasError(this.expectKeyword('DEBUGGING', this.currentToken));
+        this.nextToken();
+        node.setHasError(this.expectKeyword('MODE', this.currentToken));
+        this.nextToken();
+      } else {
+        if (this.isOptionalKeyword('DEBUGGING', this.currentToken)) {
+          this.nextToken();
+          node.setHasError(this.expectKeyword('MODE', this.currentToken));
+          this.nextToken();
+        }
+      }
+      node.setHasError(this.expectTerminator(this.currentToken));
+      this.nextToken();
+    }
+    return this.finalizeNode(
+      node,
+      new Nodes.SourceComputerParagraph(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        sourceComputerValue,
+      ),
+      this.currentToken,
+    );
+  }
+
+  private parseObjectComputerParagraph(): Nodes.ObjectComputerParagraph {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.ObjectComputerParagraph;
+    let objectComputerValue: string | undefined;
+    let memorySizeValue: string | undefined;
+    let sequenceValue: string | undefined;
+    let segmentLimitValue: string | undefined;
+
+    this.nextToken();
+    node.setHasError(this.expectTerminator(this.currentToken));
+    this.nextToken();
+
+    if (this.isOptionalIdentifier(this.currentToken)) {
+      objectComputerValue = this.currentToken.value;
+      this.nextToken();
+      if (this.isOptionalKeyword('MEMORY', this.currentToken)) {
+        this.nextToken();
+        if (this.isOptionalKeyword('SIZE', this.currentToken)) {
+          this.nextToken();
+        }
+        if (this.expectNumeric(this.currentToken)) {
+          memorySizeValue = this.currentToken.value;
+        } else {
+          node.setHasError(true);
+        }
+        this.nextToken();
+        node.setHasError(!this.expectSeveralKeywords(['WORDS', 'CHARACTERS', 'MODULES'], this.currentToken));
+        this.nextToken();
+
+        if (this.isOptionalKeyword('PROGRAM', this.currentToken)) {
+          this.nextToken();
+          if (this.isOptionalKeyword('COLLATING', this.currentToken)) {
+            this.nextToken();
+          }
+          node.setHasError(this.expectKeyword('SEQUENCE', this.currentToken));
+          this.nextToken();
+          if (this.isOptionalKeyword('IS', this.currentToken)) {
+            this.nextToken();
+          }
+          if (this.expectIdentifier(this.currentToken)) {
+            sequenceValue = this.currentToken.value;
+          } else {
+            node.setHasError(true);
+          }
+          this.nextToken();
+        }
+
+        if (this.isOptionalKeyword('COLLATING', this.currentToken)) {
+          this.nextToken();
+          node.setHasError(this.expectKeyword('SEQUENCE', this.currentToken));
+          this.nextToken();
+          if (this.isOptionalKeyword('IS', this.currentToken)) {
+            this.nextToken();
+          }
+          if (this.expectIdentifier(this.currentToken)) {
+            sequenceValue = this.currentToken.value;
+          } else {
+            node.setHasError(true);
+          }
+          this.nextToken();
+        }
+
+        if (this.isOptionalKeyword('SEQUENCE', this.currentToken)) {
+          this.nextToken();
+          if (this.isOptionalKeyword('IS', this.currentToken)) {
+            this.nextToken();
+          }
+          if (this.expectIdentifier(this.currentToken)) {
+            sequenceValue = this.currentToken.value;
+          } else {
+            node.setHasError(true);
+          }
+          this.nextToken();
+        }
+
+        if (this.isOptionalKeyword('SEGMENT-LIMIT', this.currentToken)) {
+          this.nextToken();
+          if (this.isOptionalKeyword('IS', this.currentToken)) {
+            this.nextToken();
+          }
+          if (this.expectIdentifier(this.currentToken)) {
+            segmentLimitValue = this.currentToken.value;
+          } else {
+            node.setHasError(true);
+          }
+          this.nextToken();
+        }
+        node.setHasError(!this.expectTerminator(this.currentToken));
+        this.nextToken();
+      }
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.ObjectComputerParagraph(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        objectComputerValue,
+        memorySizeValue,
+        sequenceValue,
+        segmentLimitValue,
+      ),
+      this.currentToken,
+    );
+  }
+
+  // TODO Impl + test missing
+  private parseInputOutputSection(): Nodes.InputOutputSection {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.InputOutputSection;
+
+    this.nextToken();
+    node.setHasError(this.expectKeyword('SECTION', this.currentToken));
+
+    return this.finalizeNode(
+      node,
+      new Nodes.InputOutputSection(node.startColumnTotal, node.startColumnRelative, node.startLine),
+      this.currentToken,
+    );
+  }
+
   private parseRecordingModeClause(): Nodes.RecordingModeClause {
     const node = this.startNode(this.currentToken);
     node.type = Syntax.RecordingModeClause;
@@ -378,6 +641,14 @@ export class Parser {
     return true;
   }
 
+  expectSeveralKeywords(keywords: string[], token: Token): boolean {
+    if (token.type !== TokenType.Keyword || !keywords.includes(token.value)) {
+      this.errorHandler.unexpectedTokenError(token, undefined, new Token(keywords.toString(), TokenType.Keyword));
+      return false;
+    }
+    return true;
+  }
+
   expectModeIdentifier(token: Token): boolean {
     if (
       token.type !== TokenType.Identifier ||
@@ -397,6 +668,14 @@ export class Parser {
     return true;
   }
 
+  expectNumeric(token: Token): boolean {
+    if (token.type !== TokenType.NumericLiteral) {
+      this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.NumericLiteral));
+      return false;
+    }
+    return true;
+  }
+
   expectTerminator(token: Token) {
     if (token.type !== TokenType.Terminator) {
       this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.Terminator));
@@ -411,5 +690,9 @@ export class Parser {
 
   isOptionalTerminator(token: Token) {
     return token.type === TokenType.Terminator;
+  }
+
+  isOptionalIdentifier(token: Token) {
+    return token.type === TokenType.Identifier;
   }
 }

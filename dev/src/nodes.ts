@@ -56,10 +56,21 @@ export class Node {
 
 export class CobolSourceProgram extends Node {
   readonly programId: ProgramId;
+  readonly identificationDivisionContent: IdentificationDivisionContent;
+  readonly environmentDivisionContent: EnvironmentDivisionContent;
 
-  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, programId: ProgramId) {
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    programId: ProgramId,
+    identificationDivisionContent: IdentificationDivisionContent,
+    environmentDivisionContent: EnvironmentDivisionContent,
+  ) {
     super(startColumnTotal, startColumnRelative, startLine);
     this.programId = programId;
+    this.identificationDivisionContent = identificationDivisionContent;
+    this.environmentDivisionContent = environmentDivisionContent;
   }
 }
 export class ProgramId extends Node {
@@ -94,6 +105,79 @@ export class IdentificationDivisionContent extends Node {
     this.security = security;
   }
 }
+export class EnvironmentDivisionContent extends Node {
+  readonly configurationSection: ConfigurationSection | undefined;
+  readonly inputOutputSection: InputOutputSection | undefined;
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    configurationSection: ConfigurationSection | undefined,
+    inputOutputSection: InputOutputSection | undefined,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.configurationSection = configurationSection;
+    this.inputOutputSection = inputOutputSection;
+  }
+}
+
+export class ConfigurationSection extends Node {
+  readonly sourceComputerParagraph: SourceComputerParagraph | undefined;
+  readonly objectComputerParagraph: ObjectComputerParagraph | undefined;
+  readonly specialNamesParagraph: SpecialNamesParagraph | undefined;
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    sourceComputerParagraph: SourceComputerParagraph | undefined,
+    objectComputerParagraph: ObjectComputerParagraph | undefined,
+    specialNamesParagraph: SpecialNamesParagraph | undefined,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.sourceComputerParagraph = sourceComputerParagraph;
+    this.objectComputerParagraph = objectComputerParagraph;
+    this.specialNamesParagraph = specialNamesParagraph;
+  }
+}
+
+export class SourceComputerParagraph extends Node {
+  readonly sourceComputerValue: string | undefined;
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    sourceComputerValue: string | undefined,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.sourceComputerValue = sourceComputerValue;
+  }
+}
+
+export class ObjectComputerParagraph extends Node {
+  readonly objectComputerValue: string | undefined;
+  readonly memorySizeValue: string | undefined;
+  readonly sequenceValue: string | undefined;
+  readonly segmentLimitValue: string | undefined;
+
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    objectComputerValue: string | undefined,
+    memorySizeValue: string | undefined,
+    sequenceValue: string | undefined,
+    segmentLimitValue: string | undefined,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.objectComputerValue = objectComputerValue;
+    this.memorySizeValue = memorySizeValue;
+    this.sequenceValue = sequenceValue;
+    this.segmentLimitValue = segmentLimitValue;
+  }
+}
+export class SpecialNamesParagraph extends Node {}
+
+export class InputOutputSection extends Node {}
 
 export class RecordingModeClause extends Node {}
 
