@@ -71,14 +71,41 @@ export class Parser {
             case 'OBJECT-COMPUTER':
               node = this.parseObjectComputerParagraph();
               break;
+            case 'SPECIAL-NAMES':
+              node = this.parseSpecialNamesParagraph();
+              break;
+            case 'CURRENCY':
+              node = this.parseCurrencySignClause();
+              break;
+            case 'DECIMAL-POINT':
+              node = this.parseDecimalPointClause();
+              break;
+            case 'ALPHABET':
+              node = this.parseAlphabetClause();
+              break;
+            case 'CLASS':
+              node = this.parseClassClause();
+              break;
+            case 'SYMBOLIC':
+              node = this.parseSymbolicCharactersClause();
+              break;
             default:
+              this.errorHandler.unexpectedTokenError(
+                this.currentToken,
+                'Unknown Keyword',
+                new Token('Known Keyword', TokenType.Keyword),
+              );
               this.nextToken();
               break;
           }
           this.nodeList.push(node);
           break;
         default:
-          this.errorHandler.unexpectedTokenError(this.currentToken, undefined, new Token('any', TokenType.Keyword));
+          this.errorHandler.unexpectedTokenError(
+            this.currentToken,
+            'Expected a Keyword - Got other TokenType',
+            new Token('any', TokenType.Keyword),
+          );
           this.nextToken();
           break;
       }
@@ -265,8 +292,8 @@ export class Parser {
   private parseEnvironmentDivisionContent(): Nodes.EnvironmentDivisionContent {
     const node = this.startNode(this.currentToken);
     node.type = Syntax.EnvironmentDivisionContent;
-    let configurationSection: Nodes.ConfigurationSection | undefined;
-    let inputOutputSection: Nodes.InputOutputSection | undefined;
+    let configurationSection: Nodes.ConfigurationSection | null = null;
+    let inputOutputSection: Nodes.InputOutputSection | null = null;
 
     this.nextToken();
     node.setHasError(this.expectKeyword('DIVISION', this.currentToken));
@@ -296,16 +323,18 @@ export class Parser {
   }
 
   // TODO: impl + test missing
-  private parseConfigurationSection(): Nodes.ConfigurationSection | undefined {
+  private parseConfigurationSection(): Nodes.ConfigurationSection | null {
     const node = this.startNode(this.currentToken);
     node.type = Syntax.ConfigurationSection;
-    let sourceComputerParagraph: Nodes.SourceComputerParagraph | undefined;
-    let objectComputerParagraph: Nodes.ObjectComputerParagraph | undefined;
-    // TODO: Workaround for test...
-    const specialNamesParagraph: Nodes.SpecialNamesParagraph | undefined = undefined;
+    let sourceComputerParagraph: Nodes.SourceComputerParagraph | null = null;
+    let objectComputerParagraph: Nodes.ObjectComputerParagraph | null = null;
+    let specialNamesParagraph: Nodes.SpecialNamesParagraph | null = null;
 
     this.nextToken();
-    node.setHasError(this.expectKeyword('SECTION', this.currentToken));
+    node.setHasError(!this.expectKeyword('SECTION', this.currentToken));
+    this.nextToken();
+    node.setHasError(!this.expectTerminator(this.currentToken));
+    this.nextToken();
 
     if (this.isOptionalKeyword('SOURCE-COMPUTER', this.currentToken)) {
       sourceComputerParagraph = this.parseSourceComputerParagraph();
@@ -315,36 +344,28 @@ export class Parser {
       objectComputerParagraph = this.parseObjectComputerParagraph();
     }
 
-    if (this.isOptionalKeyword('OBJECT-COMPUTER', this.currentToken)) {
-      // specialNamesParagraph = this.parseSpecialNamesParagraph();
+    if (this.isOptionalKeyword('SPECIAL-NAMES', this.currentToken)) {
+      specialNamesParagraph = this.parseSpecialNamesParagraph();
     }
 
-    if (
-      sourceComputerParagraph === undefined &&
-      objectComputerParagraph === undefined &&
-      specialNamesParagraph === undefined
-    ) {
-      return undefined;
-    } else {
-      return this.finalizeNode(
-        node,
-        new Nodes.ConfigurationSection(
-          node.startColumnTotal,
-          node.startColumnRelative,
-          node.startLine,
-          sourceComputerParagraph,
-          objectComputerParagraph,
-          specialNamesParagraph,
-        ),
-        this.currentToken,
-      );
-    }
+    return this.finalizeNode(
+      node,
+      new Nodes.ConfigurationSection(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        sourceComputerParagraph,
+        objectComputerParagraph,
+        specialNamesParagraph,
+      ),
+      this.currentToken,
+    );
   }
 
   private parseSourceComputerParagraph(): Nodes.SourceComputerParagraph {
     const node = this.startNode(this.currentToken);
     node.type = Syntax.SourceComputerParagraph;
-    let sourceComputerValue: string | undefined;
+    let sourceComputerValue: string = '';
 
     this.nextToken();
     node.setHasError(this.expectTerminator(this.currentToken));
@@ -384,10 +405,10 @@ export class Parser {
   private parseObjectComputerParagraph(): Nodes.ObjectComputerParagraph {
     const node = this.startNode(this.currentToken);
     node.type = Syntax.ObjectComputerParagraph;
-    let objectComputerValue: string | undefined;
-    let memorySizeValue: string | undefined;
-    let sequenceValue: string | undefined;
-    let segmentLimitValue: string | undefined;
+    let objectComputerValue: string = '';
+    let memorySizeValue: string = '';
+    let sequenceValue: string = '';
+    let segmentLimitValue: string = '';
 
     this.nextToken();
     node.setHasError(this.expectTerminator(this.currentToken));
@@ -468,9 +489,9 @@ export class Parser {
           }
           this.nextToken();
         }
-        node.setHasError(!this.expectTerminator(this.currentToken));
-        this.nextToken();
       }
+      node.setHasError(!this.expectTerminator(this.currentToken));
+      this.nextToken();
     }
 
     return this.finalizeNode(
@@ -486,6 +507,378 @@ export class Parser {
       ),
       this.currentToken,
     );
+  }
+
+  private parseSpecialNamesParagraph(): Nodes.SpecialNamesParagraph {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.SpecialNamesParagraph;
+    const specialNamesParagraphStatusPhrases: Nodes.SpecialNamesParagraphStatusPhrase[] = [];
+    const specialNamesParagraphClauses: Nodes.SpecialNamesParagraphClause[] = [];
+    let currencySignClause: Nodes.CurrencySignClause | null = null;
+    let decimalPointClause: Nodes.DecimalPointClause | null = null;
+
+    this.nextToken();
+    node.setHasError(this.expectTerminator(this.currentToken));
+    this.nextToken();
+
+    while (
+      this.isOptionalIdentifier(this.currentToken) ||
+      this.isOptionalKeyword('ON', this.currentToken) ||
+      this.isOptionalKeyword('OFF', this.currentToken)
+    ) {
+      specialNamesParagraphStatusPhrases.push(this.parseSpecialNamesStatusPhrase());
+    }
+
+    while (
+      this.isOptionalKeyword('ALPHABET', this.currentToken) ||
+      this.isOptionalKeyword('SYMBOLIC', this.currentToken) ||
+      this.isOptionalKeyword('CLASS', this.currentToken) ||
+      this.isOptionalKeyword('CURRENCY', this.currentToken) ||
+      this.isOptionalKeyword('DECIMAL-POINT', this.currentToken)
+    ) {
+      if (this.isOptionalKeyword('CURRENCY', this.currentToken)) {
+        if (currencySignClause === null) {
+          currencySignClause = this.parseCurrencySignClause();
+        } else {
+          this.errorHandler.unexpectedTokenError(
+            this.currentToken,
+            'Already parsed one currencySignClause - No multiple allowed',
+          );
+          this.nextToken();
+        }
+      }
+
+      if (this.isOptionalKeyword('DECIMAL-POINT', this.currentToken)) {
+        if (decimalPointClause === null) {
+          decimalPointClause = this.parseDecimalPointClause();
+        } else {
+          this.errorHandler.unexpectedTokenError(
+            this.currentToken,
+            'Already parsed one decimalPointClause - No multiple allowed',
+          );
+          this.nextToken();
+        }
+      }
+
+      if (this.isOptionalKeyword('ALPHABET', this.currentToken)) {
+        specialNamesParagraphClauses.push(this.parseAlphabetClause());
+      }
+
+      if (this.isOptionalKeyword('SYMBOLIC', this.currentToken)) {
+        specialNamesParagraphClauses.push(this.parseSymbolicCharactersClause());
+      }
+
+      if (this.isOptionalKeyword('CLASS', this.currentToken)) {
+        specialNamesParagraphClauses.push(this.parseClassClause());
+      }
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.SpecialNamesParagraph(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        specialNamesParagraphStatusPhrases,
+        specialNamesParagraphClauses,
+        currencySignClause,
+        decimalPointClause,
+      ),
+      this.currentToken,
+    );
+  }
+
+  private parseSpecialNamesStatusPhrase(): Nodes.SpecialNamesParagraphStatusPhrase {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.SpecialNamesParagraphStatusPhrase;
+    let environment: string = '';
+    let mnemonic: string = '';
+    let onCondition: Nodes.Condition | null = null;
+    let offCondition: Nodes.Condition | null = null;
+
+    if (this.isOptionalIdentifier(this.currentToken)) {
+      environment = this.currentToken.value;
+      this.nextToken();
+      if (this.isOptionalKeyword('IS', this.currentToken)) {
+        this.nextToken();
+      }
+      mnemonic = this.currentToken.value;
+      this.nextToken();
+    }
+
+    if (this.isOptionalKeyword('ON', this.currentToken)) {
+      this.nextToken();
+      if (this.isOptionalKeyword('STATUS', this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.isOptionalKeyword('IS', this.currentToken)) {
+        this.nextToken();
+      }
+      onCondition = this.parseCondition();
+
+      if (this.isOptionalKeyword('OFF', this.currentToken)) {
+        this.nextToken();
+        if (this.isOptionalKeyword('STATUS', this.currentToken)) {
+          this.nextToken();
+        }
+        if (this.isOptionalKeyword('IS', this.currentToken)) {
+          this.nextToken();
+        }
+        offCondition = this.parseCondition();
+      }
+    }
+
+    if (this.isOptionalKeyword('OFF', this.currentToken)) {
+      this.nextToken();
+      if (this.isOptionalKeyword('STATUS', this.currentToken)) {
+        this.nextToken();
+      }
+      if (this.isOptionalKeyword('IS', this.currentToken)) {
+        this.nextToken();
+      }
+      offCondition = this.parseCondition();
+
+      if (this.isOptionalKeyword('ON', this.currentToken)) {
+        this.nextToken();
+        if (this.isOptionalKeyword('STATUS', this.currentToken)) {
+          this.nextToken();
+        }
+        if (this.isOptionalKeyword('IS', this.currentToken)) {
+          this.nextToken();
+        }
+        onCondition = this.parseCondition();
+      }
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.SpecialNamesParagraphStatusPhrase(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        environment,
+        mnemonic,
+        onCondition,
+        offCondition,
+      ),
+      this.currentToken,
+    );
+  }
+
+  private parseCurrencySignClause(): Nodes.CurrencySignClause {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.CurrencySignClause;
+
+    this.nextToken();
+    if (this.isOptionalKeyword('SIGN', this.currentToken)) {
+      this.nextToken();
+    }
+    if (this.isOptionalKeyword('IS', this.currentToken)) {
+      this.nextToken();
+    }
+    const currencySignValue = this.currentToken.value;
+    this.nextToken();
+
+    return this.finalizeNode(
+      node,
+      new Nodes.CurrencySignClause(node.startColumnTotal, node.startColumnRelative, node.startLine, currencySignValue),
+      this.currentToken,
+    );
+  }
+
+  private parseSymbolicCharactersClause(): Nodes.SymbolicCharactersClause {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.SymbolicCharacter;
+    const symbolicCharacters: string[] = [];
+    const symbolicIntegers: string[] = [];
+    let inOrdinalPosition: string = '';
+
+    this.nextToken();
+    if (this.isOptionalKeyword('CHARACTERS', this.currentToken)) {
+      this.nextToken();
+    }
+    while (this.isOptionalIdentifier(this.currentToken)) {
+      if (this.expectIdentifier(this.currentToken)) {
+        while (this.isOptionalIdentifier(this.currentToken)) {
+          symbolicCharacters.push(this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+        this.nextToken();
+      }
+      if (this.isSeveralOptionalKeywords(['ARE', 'IS'], this.currentToken)) {
+        this.nextToken();
+      }
+
+      if (this.expectNumeric(this.currentToken)) {
+        while (this.isOptionalNumeric(this.currentToken)) {
+          symbolicIntegers.push(this.currentToken.value);
+          this.nextToken();
+        }
+      } else {
+        node.setHasError(true);
+        this.nextToken();
+      }
+    }
+
+    if (this.isOptionalKeyword('IN', this.currentToken)) {
+      this.nextToken();
+      if (this.expectIdentifier(this.currentToken)) {
+        inOrdinalPosition = this.currentToken.value;
+      } else {
+        node.setHasError(true);
+      }
+      this.nextToken();
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.SymbolicCharactersClause(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        symbolicCharacters,
+        symbolicIntegers,
+        inOrdinalPosition,
+      ),
+      this.currentToken,
+    );
+  }
+
+  private parseDecimalPointClause(): Nodes.DecimalPointClause {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.DecimalPointClause;
+
+    this.nextToken();
+    if (this.isOptionalKeyword('IS', this.currentToken)) {
+      this.nextToken();
+    }
+    node.setHasError(!this.expectKeyword('COMMA', this.currentToken));
+    this.nextToken();
+
+    return this.finalizeNode(
+      node,
+      new Nodes.DecimalPointClause(node.startColumnTotal, node.startColumnRelative, node.startLine),
+      this.currentToken,
+    );
+  }
+
+  private parseAlphabetClause(): Nodes.AlphabetClause {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.AlphabetClause;
+    let alphabetName: string = '';
+    let alphabetType: string = '';
+    const alphabetLiterals: Nodes.Literal[] = [];
+
+    this.nextToken();
+    if (this.expectIdentifier(this.currentToken)) {
+      alphabetName = this.currentToken.value;
+    } else {
+      node.setHasError(true);
+    }
+    this.nextToken();
+
+    if (this.isOptionalKeyword('IS', this.currentToken)) {
+      this.nextToken();
+    }
+
+    if (this.isSeveralOptionalKeywords(['STANDARD-1', 'STANDARD-2', 'NATIVE', 'EBCDIC'], this.currentToken)) {
+      alphabetType = this.currentToken.value;
+      this.nextToken();
+    } else {
+      if (this.expectIdentifier(this.currentToken)) {
+        while (this.isOptionalIdentifier(this.currentToken)) {
+          const alphabetLiteral: Nodes.Literal = new Nodes.Literal();
+          alphabetLiteral.literal = this.currentToken.value;
+          this.nextToken();
+          if (this.isSeveralOptionalKeywords(['THROUGH', 'THRU'], this.currentToken)) {
+            this.nextToken();
+            if (this.expectIdentifier(this.currentToken)) {
+              alphabetLiteral.throughLiteral = this.currentToken.value;
+            } else {
+              node.setHasError(true);
+            }
+            this.nextToken();
+          }
+
+          if (this.isOptionalKeyword('ALSO', this.currentToken)) {
+            this.nextToken();
+            if (this.expectIdentifier(this.currentToken)) {
+              alphabetLiteral.alsoLiteral = this.currentToken.value;
+            } else {
+              node.setHasError(true);
+            }
+            this.nextToken();
+          }
+          alphabetLiterals.push(alphabetLiteral);
+        }
+      } else {
+        node.setHasError(true);
+        this.nextToken();
+      }
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.AlphabetClause(
+        node.startColumnTotal,
+        node.startColumnRelative,
+        node.startLine,
+        alphabetName,
+        alphabetType,
+        alphabetLiterals,
+      ),
+      this.currentToken,
+    );
+  }
+
+  private parseClassClause(): Nodes.ClassClause {
+    const node = this.startNode(this.currentToken);
+    node.type = Syntax.ClassClause;
+    let className: string = '';
+    const classLiterals: Nodes.Literal[] = [];
+
+    this.nextToken();
+    if (this.expectIdentifier(this.currentToken)) {
+      className = this.currentToken.value;
+    } else {
+      node.setHasError(true);
+    }
+    this.nextToken();
+
+    if (this.isOptionalKeyword('IS', this.currentToken)) {
+      this.nextToken();
+    }
+
+    while (this.isOptionalIdentifier(this.currentToken)) {
+      const classLiteral: Nodes.Literal = new Nodes.Literal();
+      classLiteral.literal = this.currentToken.value;
+      this.nextToken();
+      if (this.isSeveralOptionalKeywords(['THROUGH', 'THRU'], this.currentToken)) {
+        this.nextToken();
+        if (this.expectIdentifier(this.currentToken)) {
+          classLiteral.throughLiteral = this.currentToken.value;
+        } else {
+          node.setHasError(true);
+        }
+        this.nextToken();
+      }
+
+      classLiterals.push(classLiteral);
+    }
+
+    return this.finalizeNode(
+      node,
+      new Nodes.ClassClause(node.startColumnTotal, node.startColumnRelative, node.startLine, className, classLiterals),
+      this.currentToken,
+    );
+  }
+
+  // TODO ALL
+  private parseCondition(): null {
+    this.nextToken();
+    return null;
   }
 
   // TODO Impl + test missing
@@ -571,7 +964,10 @@ export class Parser {
     /* istanbul ignore else */
     if (this.isOptionalKeyword('PROGRAM', this.currentToken)) {
       if (!initialExists) {
-        this.errorHandler.unexpectedTokenError(this.currentToken);
+        this.errorHandler.unexpectedTokenError(
+          this.currentToken,
+          'Keyword "PROGRAM" in the ProgramID statement only allowed if "INITIAL" Keyword is present',
+        );
       }
       this.nextToken();
     }
@@ -630,69 +1026,98 @@ export class Parser {
     return node;
   }
 
-  // Expect the next token to match the specified keyword.
-  // If not, an exception will be thrown.
-
-  expectKeyword(keyword: string, token: Token): boolean {
+  private expectKeyword(keyword: string, token: Token): boolean {
     if (token.type !== TokenType.Keyword || token.value !== keyword) {
-      this.errorHandler.unexpectedTokenError(token, undefined, new Token(keyword, TokenType.Keyword));
+      this.errorHandler.unexpectedTokenError(
+        token,
+        'Expected certain type of keyword. Got different',
+        new Token(keyword, TokenType.Keyword),
+      );
       return false;
     }
     return true;
   }
 
-  expectSeveralKeywords(keywords: string[], token: Token): boolean {
+  private expectSeveralKeywords(keywords: string[], token: Token): boolean {
     if (token.type !== TokenType.Keyword || !keywords.includes(token.value)) {
-      this.errorHandler.unexpectedTokenError(token, undefined, new Token(keywords.toString(), TokenType.Keyword));
+      this.errorHandler.unexpectedTokenError(
+        token,
+        'Expected one of the keywords in the list. Got different',
+        new Token(keywords.toString(), TokenType.Keyword),
+      );
       return false;
     }
     return true;
   }
 
-  expectModeIdentifier(token: Token): boolean {
+  private expectModeIdentifier(token: Token): boolean {
     if (
       token.type !== TokenType.Identifier ||
       !(token.value === 'F' || token.value === 'V' || token.value === 'U' || token.value === 'S')
     ) {
-      this.errorHandler.unexpectedTokenError(token, undefined, new Token('F or V or U or S', 'ModeIdentifier'));
+      this.errorHandler.unexpectedTokenError(
+        token,
+        'Expected special type of Identifier',
+        new Token('F or V or U or S', 'ModeIdentifier'),
+      );
       return false;
     }
     return true;
   }
 
-  expectIdentifier(token: Token): boolean {
+  private expectIdentifier(token: Token): boolean {
     if (token.type !== TokenType.Identifier) {
-      this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.Identifier));
+      this.errorHandler.unexpectedTokenError(
+        token,
+        'Expected identifier token - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
       return false;
     }
     return true;
   }
 
-  expectNumeric(token: Token): boolean {
+  private expectNumeric(token: Token): boolean {
     if (token.type !== TokenType.NumericLiteral) {
-      this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.NumericLiteral));
+      this.errorHandler.unexpectedTokenError(
+        token,
+        'Expected numeric token - Got different',
+        new Token(undefined, TokenType.NumericLiteral),
+      );
       return false;
     }
     return true;
   }
 
-  expectTerminator(token: Token) {
+  private expectTerminator(token: Token) {
     if (token.type !== TokenType.Terminator) {
-      this.errorHandler.unexpectedTokenError(token, undefined, new Token(undefined, TokenType.Terminator));
+      this.errorHandler.unexpectedTokenError(
+        token,
+        'Expected terminator token - Got different',
+        new Token(undefined, TokenType.Terminator),
+      );
       return false;
     }
     return true;
   }
 
-  isOptionalKeyword(keyword: string, token: Token) {
+  private isOptionalKeyword(keyword: string, token: Token) {
     return token.type === TokenType.Keyword && token.value === keyword;
   }
 
-  isOptionalTerminator(token: Token) {
+  private isSeveralOptionalKeywords(keyword: string[], token: Token) {
+    return token.type === TokenType.Keyword && keyword.includes(token.value);
+  }
+
+  private isOptionalTerminator(token: Token) {
     return token.type === TokenType.Terminator;
   }
 
-  isOptionalIdentifier(token: Token) {
+  private isOptionalIdentifier(token: Token) {
     return token.type === TokenType.Identifier;
+  }
+
+  private isOptionalNumeric(token: Token) {
+    return token.type === TokenType.NumericLiteral;
   }
 }

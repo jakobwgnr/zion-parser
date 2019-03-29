@@ -106,14 +106,14 @@ export class IdentificationDivisionContent extends Node {
   }
 }
 export class EnvironmentDivisionContent extends Node {
-  readonly configurationSection: ConfigurationSection | undefined;
-  readonly inputOutputSection: InputOutputSection | undefined;
+  readonly configurationSection: ConfigurationSection | null;
+  readonly inputOutputSection: InputOutputSection | null;
   constructor(
     startColumnTotal: number,
     startColumnRelative: number,
     startLine: number,
-    configurationSection: ConfigurationSection | undefined,
-    inputOutputSection: InputOutputSection | undefined,
+    configurationSection: ConfigurationSection | null,
+    inputOutputSection: InputOutputSection | null,
   ) {
     super(startColumnTotal, startColumnRelative, startLine);
     this.configurationSection = configurationSection;
@@ -122,16 +122,16 @@ export class EnvironmentDivisionContent extends Node {
 }
 
 export class ConfigurationSection extends Node {
-  readonly sourceComputerParagraph: SourceComputerParagraph | undefined;
-  readonly objectComputerParagraph: ObjectComputerParagraph | undefined;
-  readonly specialNamesParagraph: SpecialNamesParagraph | undefined;
+  readonly sourceComputerParagraph: SourceComputerParagraph | null;
+  readonly objectComputerParagraph: ObjectComputerParagraph | null;
+  readonly specialNamesParagraph: SpecialNamesParagraph | null;
   constructor(
     startColumnTotal: number,
     startColumnRelative: number,
     startLine: number,
-    sourceComputerParagraph: SourceComputerParagraph | undefined,
-    objectComputerParagraph: ObjectComputerParagraph | undefined,
-    specialNamesParagraph: SpecialNamesParagraph | undefined,
+    sourceComputerParagraph: SourceComputerParagraph | null,
+    objectComputerParagraph: ObjectComputerParagraph | null,
+    specialNamesParagraph: SpecialNamesParagraph | null,
   ) {
     super(startColumnTotal, startColumnRelative, startLine);
     this.sourceComputerParagraph = sourceComputerParagraph;
@@ -141,32 +141,27 @@ export class ConfigurationSection extends Node {
 }
 
 export class SourceComputerParagraph extends Node {
-  readonly sourceComputerValue: string | undefined;
-  constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
-    sourceComputerValue: string | undefined,
-  ) {
+  readonly sourceComputerValue: string;
+  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, sourceComputerValue: string) {
     super(startColumnTotal, startColumnRelative, startLine);
     this.sourceComputerValue = sourceComputerValue;
   }
 }
 
 export class ObjectComputerParagraph extends Node {
-  readonly objectComputerValue: string | undefined;
-  readonly memorySizeValue: string | undefined;
-  readonly sequenceValue: string | undefined;
-  readonly segmentLimitValue: string | undefined;
+  readonly objectComputerValue: string;
+  readonly memorySizeValue: string;
+  readonly sequenceValue: string;
+  readonly segmentLimitValue: string;
 
   constructor(
     startColumnTotal: number,
     startColumnRelative: number,
     startLine: number,
-    objectComputerValue: string | undefined,
-    memorySizeValue: string | undefined,
-    sequenceValue: string | undefined,
-    segmentLimitValue: string | undefined,
+    objectComputerValue: string,
+    memorySizeValue: string,
+    sequenceValue: string,
+    segmentLimitValue: string,
   ) {
     super(startColumnTotal, startColumnRelative, startLine);
     this.objectComputerValue = objectComputerValue;
@@ -175,14 +170,142 @@ export class ObjectComputerParagraph extends Node {
     this.segmentLimitValue = segmentLimitValue;
   }
 }
-export class SpecialNamesParagraph extends Node {}
+export class SpecialNamesParagraph extends Node {
+  readonly specialNamesParagraphStatusPhrases: SpecialNamesParagraphStatusPhrase[];
+  readonly specialNamesParagraphClauses: SpecialNamesParagraphClause[];
+  readonly currencySignClause: CurrencySignClause | null = null;
+  readonly decimalPointClause: DecimalPointClause | null = null;
+
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    specialNamesParagraphStatusPhrases: SpecialNamesParagraphStatusPhrase[],
+    specialNamesParagraphClauses: SpecialNamesParagraphClause[],
+    currencySignClause: CurrencySignClause | null,
+    decimalPointClause: DecimalPointClause | null,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.specialNamesParagraphStatusPhrases = specialNamesParagraphStatusPhrases;
+    this.specialNamesParagraphClauses = specialNamesParagraphClauses;
+    this.currencySignClause = currencySignClause;
+    this.decimalPointClause = decimalPointClause;
+  }
+}
+
+export class SpecialNamesParagraphStatusPhrase extends Node {
+  readonly environmentValue: string;
+  readonly mnemonicValue: string;
+  readonly onCondition: Condition | null;
+  readonly offCondition: Condition | null;
+
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    environmentValue: string,
+    mnemonicValue: string,
+    onCondition: Condition | null,
+    offCondition: Condition | null,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.environmentValue = environmentValue;
+    this.mnemonicValue = mnemonicValue;
+    this.onCondition = onCondition;
+    this.offCondition = offCondition;
+  }
+}
 
 export class InputOutputSection extends Node {}
 
 export class RecordingModeClause extends Node {}
 
+// TODO
+export type Condition = CombinableCondition | CombinedCondition;
+export class CombinableCondition extends Node {}
+export class CombinedCondition extends Node {}
+
+// TODO
+export type SpecialNamesParagraphClause =
+  | AlphabetClause
+  | SymbolicCharactersClause
+  | ClassClause
+  | CurrencySignClause
+  | DecimalPointClause;
+export class AlphabetClause extends Node {
+  readonly alphabetName: string = '';
+  readonly alphabetType: string = '';
+  readonly alphabetLiterals: Literal[] = [];
+
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    alphabetName: string,
+    alphabetType: string,
+    alphabetLiterals: Literal[],
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.alphabetName = alphabetName;
+    this.alphabetType = alphabetType;
+    this.alphabetLiterals = alphabetLiterals;
+  }
+}
+export class SymbolicCharactersClause extends Node {
+  readonly symbolicCharacters: string[] = [];
+  readonly symbolicIntegers: string[] = [];
+  readonly inOrdinalPosition: string = '';
+
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    symbolicCharacters: string[],
+    symbolicIntegers: string[],
+    inOrdinalPosition: string,
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.symbolicCharacters = symbolicCharacters;
+    this.symbolicIntegers = symbolicIntegers;
+    this.inOrdinalPosition = inOrdinalPosition;
+  }
+}
+export class ClassClause extends Node {
+  readonly className: string = '';
+  readonly classLiterals: Literal[] = [];
+
+  constructor(
+    startColumnTotal: number,
+    startColumnRelative: number,
+    startLine: number,
+    className: string,
+    classLiterals: Literal[],
+  ) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.className = className;
+    this.classLiterals = classLiterals;
+  }
+}
+export class CurrencySignClause extends Node {
+  readonly currencySignValue: string;
+
+  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, currencySignValue: string) {
+    super(startColumnTotal, startColumnRelative, startLine);
+    this.currencySignValue = currencySignValue;
+  }
+}
+export class DecimalPointClause extends Node {
+  // if Node is available isComma is always true
+  readonly isComma: boolean = true;
+}
+
+export class Literal {
+  literal: string = '';
+  throughLiteral: string = '';
+  alsoLiteral: string = '';
+}
+
 // export type ConfigurationSectionParagraph = SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph;
-// export type SpecialNamesParagraphClause = AlphabetClause | SymbolicCharactersClause | ClassClause | CurrencySignClause | DecimalPointClause;
 // export type FileAndSortDescriptionEntryClauses = ExternalClause | GlobalClause | BlockContainsClause | RecordClause | LabelRecordsClause | ValueOfClause | DataRecordsClause | LinageClause | RecordingModeClause | CodeSetClause;
 // export type DataDescriptionEntryClauses = RedefinesClause | BlankWhenZeroClause | JustifiedClause | OccursClause | PictureClause | SignClause | SyncronizedClause | UsageClause | ConditionValueClause | DataValueClause | RenamesClause;
 // export type Sections = Paragraphs;
@@ -193,7 +316,6 @@ export class RecordingModeClause extends Node {}
 //     | StringStatement | SubtractStatement | UnstringStatement | WriteStatement;
 // export type CompilerDirectingStatement = BasisStatement | CblProcessStatement | ControlCblStatement | CopyStatement | DeleteCompilerDirectingStatement | EjectStatement | EnterStatement | InsertStatement | ReadyOrResetTraceStatement | ReplaceStatement
 //     | ServiceLabelStatement | ServiceReloadStatement | SkipStatement | TitleStatement | UseStatement;
-// export type Condition = CombinableCondition | CombinedCondition;
 // export type SimpleCondition = ClassCondition | ConditionNameCondition | RelationCondition | SignCondition | SwitchStatusCondition | NegatedSimpleCondition;
 // export type Name = AlphabetName | ClassName | ConditionName | FileName | IndexName | MnemonicName | RecordName | RoutineName | SymbolicCharacter | LibraryName | ProgramName | TextName | ParagraphName | SectionName | ComputerName | LanguageName | EnvironmentName
 // | AssignmentName | BasisName;

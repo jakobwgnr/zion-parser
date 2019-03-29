@@ -33,7 +33,7 @@ describe('objectComputerParagraph working correctly', () => {
     expect(ast.nodes[0].type).toBe(Syntax.ObjectComputerParagraph);
     expect(ast.errors.length).toBe(1);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('SEQ');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('LIM');
   });
@@ -51,7 +51,7 @@ describe('objectComputerParagraph working correctly', () => {
     expect(ast.errors.length).toBe(1);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('123');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('LIM');
   });
 
@@ -69,7 +69,7 @@ describe('objectComputerParagraph working correctly', () => {
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('123');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('SEQ');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('');
   });
 
   test('Full statement - without "PROGRAM" KEYWORD', () => {
@@ -97,7 +97,7 @@ describe('objectComputerParagraph working correctly', () => {
     expect(ast.nodes[0].type).toBe(Syntax.ObjectComputerParagraph);
     expect(ast.errors.length).toBe(1);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('SEQ');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('LIM');
   });
@@ -113,7 +113,7 @@ describe('objectComputerParagraph working correctly', () => {
     expect(ast.errors.length).toBe(1);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('123');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('LIM');
   });
 
@@ -142,7 +142,7 @@ describe('objectComputerParagraph working correctly', () => {
     expect(ast.nodes[0].type).toBe(Syntax.ObjectComputerParagraph);
     expect(ast.errors.length).toBe(1);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('SEQ');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('LIM');
   });
@@ -158,19 +158,19 @@ describe('objectComputerParagraph working correctly', () => {
     expect(ast.errors.length).toBe(1);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('123');
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('LIM');
   });
 
   test('minimum statement', () => {
-    const ast: Ast = zionParser.parse('OBJECT-COMPUTER.', {
+    const ast: Ast = zionParser.parse('OBJECT-COMPUTER. IBM-123.', {
       fromPath: false,
     });
     expect(ast.nodes[0].type).toBe(Syntax.ObjectComputerParagraph);
     expect(ast.errors.length).toBe(0);
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe(undefined);
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe(undefined);
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe(undefined);
-    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('IBM-123');
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('');
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('');
+    expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).segmentLimitValue).toBe('');
   });
 });

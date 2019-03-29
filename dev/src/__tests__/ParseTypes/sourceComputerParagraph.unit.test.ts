@@ -15,14 +15,14 @@ describe('sourceComputerParagraph working correctly', () => {
     const ast: Ast = zionParser.parse('SOURCE-COMPUTER.', { fromPath: false });
     expect(ast.nodes[0].type).toBe(Syntax.SourceComputerParagraph);
     expect(ast.errors.length).toBe(0);
-    expect((ast.nodes[0] as Nodes.SourceComputerParagraph).sourceComputerValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.SourceComputerParagraph).sourceComputerValue).toBe('');
   });
 
   test('missing terminator should throw error', () => {
     const ast: Ast = zionParser.parse('SOURCE-COMPUTER', { fromPath: false });
     expect(ast.nodes[0].type).toBe(Syntax.SourceComputerParagraph);
     expect(ast.errors.length).toBeGreaterThan(0);
-    expect((ast.nodes[0] as Nodes.SourceComputerParagraph).sourceComputerValue).toBe(undefined);
+    expect((ast.nodes[0] as Nodes.SourceComputerParagraph).sourceComputerValue).toBe('');
   });
 
   test('Computer name only', () => {

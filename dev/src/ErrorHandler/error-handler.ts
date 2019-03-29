@@ -8,11 +8,17 @@ export class ErrorHandler {
     this.errors = [];
   }
 
-  public unexpectedTokenError(receivedtoken: Token, description?: string, expectedToken?: Token) {
-    if (!description) {
-      description = 'Unexpected Token Type: ' + receivedtoken.type + '; Value: ' + receivedtoken.value;
-    }
-    const message = 'Line ' + receivedtoken.startLine + ': ' + description;
+  public unexpectedTokenError(receivedtoken: Token, description: string, expectedToken?: Token) {
+    const message =
+      'Line ' +
+      receivedtoken.startLine +
+      ':' +
+      receivedtoken.startColumnRelative +
+      ' - ' +
+      'Unexpected Token Type: ' +
+      receivedtoken.type +
+      '; Value: ' +
+      receivedtoken.value;
     const error = new ParseError(
       message,
       receivedtoken.startColumnTotal,
