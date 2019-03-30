@@ -2,14 +2,14 @@ import { Node } from '../nodes';
 import * as Nodes from '../nodes';
 
 test('Node Constructor works expected', () => {
-  const node: Node = new Node(1, 2, 3);
+  const node: Node = new Node({ startColumnTotal: 1, startColumnRelative: 2, startLine: 3 });
   expect(node.startColumnTotal).toBe(1);
   expect(node.startColumnRelative).toBe(2);
   expect(node.startLine).toBe(3);
 });
 
 test('Node.setError working correctly', () => {
-  const node: Node = new Node(1, 2, 3);
+  const node: Node = new Node({ startColumnTotal: 1, startColumnRelative: 2, startLine: 3 });
   expect(node.hasError).toBeFalsy();
   node.setHasError(false);
   expect(node.hasError).toBeFalsy();
@@ -20,7 +20,10 @@ test('Node.setError working correctly', () => {
 });
 
 test('ProgramId constructor working correctly', () => {
-  const node: Nodes.ProgramId = new Nodes.ProgramId(1, 2, 3, 'PGMNAME');
+  const node: Nodes.ProgramId = new Nodes.ProgramId(
+    { startColumnTotal: 1, startColumnRelative: 2, startLine: 3 },
+    'PGMNAME',
+  );
   expect(node.startColumnTotal).toBe(1);
   expect(node.startColumnRelative).toBe(2);
   expect(node.startLine).toBe(3);
@@ -29,9 +32,7 @@ test('ProgramId constructor working correctly', () => {
 
 test('IdentificationDivisionContent constructor working correctly', () => {
   const node: Nodes.IdentificationDivisionContent = new Nodes.IdentificationDivisionContent(
-    1,
-    2,
-    3,
+    { startColumnTotal: 1, startColumnRelative: 2, startLine: 3 },
     'author',
     'installation',
     'dateWritten',

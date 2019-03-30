@@ -19,6 +19,11 @@
 
 /* tslint:disable:max-classes-per-file */
 
+interface NodeStandardInfo {
+  startColumnTotal: number;
+  startColumnRelative: number;
+  startLine: number;
+}
 export class Node {
   public hasError: boolean = false;
   public type: string = '';
@@ -29,10 +34,10 @@ export class Node {
   public endColumnRelative: number = 0;
   public endLine: number = 0;
 
-  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number) {
-    this.startColumnTotal = startColumnTotal;
-    this.startColumnRelative = startColumnRelative;
-    this.startLine = startLine;
+  constructor(info: NodeStandardInfo) {
+    this.startColumnTotal = info.startColumnTotal;
+    this.startColumnRelative = info.startColumnRelative;
+    this.startLine = info.startLine;
   }
 
   /* istanbul ignore next */
@@ -52,6 +57,14 @@ export class Node {
     // if once set to true it will stay to true
     this.hasError = this.hasError ? true : hasError;
   }
+
+  public getStandardInfo(): NodeStandardInfo {
+    return {
+      startColumnTotal: this.startColumnTotal,
+      startColumnRelative: this.startColumnRelative,
+      startLine: this.startLine,
+    };
+  }
 }
 
 export class CobolSourceProgram extends Node {
@@ -60,14 +73,12 @@ export class CobolSourceProgram extends Node {
   readonly environmentDivisionContent: EnvironmentDivisionContent;
 
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     programId: ProgramId,
     identificationDivisionContent: IdentificationDivisionContent,
     environmentDivisionContent: EnvironmentDivisionContent,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.programId = programId;
     this.identificationDivisionContent = identificationDivisionContent;
     this.environmentDivisionContent = environmentDivisionContent;
@@ -75,8 +86,8 @@ export class CobolSourceProgram extends Node {
 }
 export class ProgramId extends Node {
   readonly programIdValue: string;
-  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, programIdValue: string) {
-    super(startColumnTotal, startColumnRelative, startLine);
+  constructor(info: NodeStandardInfo, programIdValue: string) {
+    super(info);
     this.programIdValue = programIdValue;
   }
 }
@@ -88,16 +99,14 @@ export class IdentificationDivisionContent extends Node {
   readonly dateCompiled: string;
   readonly security: string;
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     author: string,
     installation: string,
     dateWritten: string,
     dateCompiled: string,
     security: string,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.author = author;
     this.installation = installation;
     this.dateWritten = dateWritten;
@@ -109,13 +118,11 @@ export class EnvironmentDivisionContent extends Node {
   readonly configurationSection: ConfigurationSection | null;
   readonly inputOutputSection: InputOutputSection | null;
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     configurationSection: ConfigurationSection | null,
     inputOutputSection: InputOutputSection | null,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.configurationSection = configurationSection;
     this.inputOutputSection = inputOutputSection;
   }
@@ -126,14 +133,12 @@ export class ConfigurationSection extends Node {
   readonly objectComputerParagraph: ObjectComputerParagraph | null;
   readonly specialNamesParagraph: SpecialNamesParagraph | null;
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     sourceComputerParagraph: SourceComputerParagraph | null,
     objectComputerParagraph: ObjectComputerParagraph | null,
     specialNamesParagraph: SpecialNamesParagraph | null,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.sourceComputerParagraph = sourceComputerParagraph;
     this.objectComputerParagraph = objectComputerParagraph;
     this.specialNamesParagraph = specialNamesParagraph;
@@ -142,8 +147,8 @@ export class ConfigurationSection extends Node {
 
 export class SourceComputerParagraph extends Node {
   readonly sourceComputerValue: string;
-  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, sourceComputerValue: string) {
-    super(startColumnTotal, startColumnRelative, startLine);
+  constructor(info: NodeStandardInfo, sourceComputerValue: string) {
+    super(info);
     this.sourceComputerValue = sourceComputerValue;
   }
 }
@@ -155,15 +160,13 @@ export class ObjectComputerParagraph extends Node {
   readonly segmentLimitValue: string;
 
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     objectComputerValue: string,
     memorySizeValue: string,
     sequenceValue: string,
     segmentLimitValue: string,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.objectComputerValue = objectComputerValue;
     this.memorySizeValue = memorySizeValue;
     this.sequenceValue = sequenceValue;
@@ -177,15 +180,13 @@ export class SpecialNamesParagraph extends Node {
   readonly decimalPointClause: DecimalPointClause | null = null;
 
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     specialNamesParagraphStatusPhrases: SpecialNamesParagraphStatusPhrase[],
     specialNamesParagraphClauses: SpecialNamesParagraphClause[],
     currencySignClause: CurrencySignClause | null,
     decimalPointClause: DecimalPointClause | null,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.specialNamesParagraphStatusPhrases = specialNamesParagraphStatusPhrases;
     this.specialNamesParagraphClauses = specialNamesParagraphClauses;
     this.currencySignClause = currencySignClause;
@@ -200,15 +201,13 @@ export class SpecialNamesParagraphStatusPhrase extends Node {
   readonly offCondition: Condition | null;
 
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     environmentValue: string,
     mnemonicValue: string,
     onCondition: Condition | null,
     offCondition: Condition | null,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.environmentValue = environmentValue;
     this.mnemonicValue = mnemonicValue;
     this.onCondition = onCondition;
@@ -237,15 +236,8 @@ export class AlphabetClause extends Node {
   readonly alphabetType: string = '';
   readonly alphabetLiterals: Literal[] = [];
 
-  constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
-    alphabetName: string,
-    alphabetType: string,
-    alphabetLiterals: Literal[],
-  ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+  constructor(info: NodeStandardInfo, alphabetName: string, alphabetType: string, alphabetLiterals: Literal[]) {
+    super(info);
     this.alphabetName = alphabetName;
     this.alphabetType = alphabetType;
     this.alphabetLiterals = alphabetLiterals;
@@ -257,14 +249,12 @@ export class SymbolicCharactersClause extends Node {
   readonly inOrdinalPosition: string = '';
 
   constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
+    info: NodeStandardInfo,
     symbolicCharacters: string[],
     symbolicIntegers: string[],
     inOrdinalPosition: string,
   ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+    super(info);
     this.symbolicCharacters = symbolicCharacters;
     this.symbolicIntegers = symbolicIntegers;
     this.inOrdinalPosition = inOrdinalPosition;
@@ -274,14 +264,8 @@ export class ClassClause extends Node {
   readonly className: string = '';
   readonly classLiterals: Literal[] = [];
 
-  constructor(
-    startColumnTotal: number,
-    startColumnRelative: number,
-    startLine: number,
-    className: string,
-    classLiterals: Literal[],
-  ) {
-    super(startColumnTotal, startColumnRelative, startLine);
+  constructor(info: NodeStandardInfo, className: string, classLiterals: Literal[]) {
+    super(info);
     this.className = className;
     this.classLiterals = classLiterals;
   }
@@ -289,8 +273,8 @@ export class ClassClause extends Node {
 export class CurrencySignClause extends Node {
   readonly currencySignValue: string;
 
-  constructor(startColumnTotal: number, startColumnRelative: number, startLine: number, currencySignValue: string) {
-    super(startColumnTotal, startColumnRelative, startLine);
+  constructor(info: NodeStandardInfo, currencySignValue: string) {
+    super(info);
     this.currencySignValue = currencySignValue;
   }
 }

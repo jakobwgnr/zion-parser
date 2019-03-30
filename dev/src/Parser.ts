@@ -131,9 +131,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.CobolSourceProgram(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         programId,
         identificationDivisionContent,
         environmentDivisionContent,
@@ -275,9 +273,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.IdentificationDivisionContent(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         author,
         installation,
         dateWritten,
@@ -311,13 +307,7 @@ export class Parser {
 
     return this.finalizeNode(
       node,
-      new Nodes.EnvironmentDivisionContent(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
-        configurationSection,
-        inputOutputSection,
-      ),
+      new Nodes.EnvironmentDivisionContent(node.getStandardInfo(), configurationSection, inputOutputSection),
       this.currentToken,
     );
   }
@@ -351,9 +341,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.ConfigurationSection(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         sourceComputerParagraph,
         objectComputerParagraph,
         specialNamesParagraph,
@@ -392,12 +380,7 @@ export class Parser {
     }
     return this.finalizeNode(
       node,
-      new Nodes.SourceComputerParagraph(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
-        sourceComputerValue,
-      ),
+      new Nodes.SourceComputerParagraph(node.getStandardInfo(), sourceComputerValue),
       this.currentToken,
     );
   }
@@ -497,9 +480,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.ObjectComputerParagraph(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         objectComputerValue,
         memorySizeValue,
         sequenceValue,
@@ -576,9 +557,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.SpecialNamesParagraph(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         specialNamesParagraphStatusPhrases,
         specialNamesParagraphClauses,
         currencySignClause,
@@ -653,9 +632,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.SpecialNamesParagraphStatusPhrase(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         environment,
         mnemonic,
         onCondition,
@@ -681,7 +658,7 @@ export class Parser {
 
     return this.finalizeNode(
       node,
-      new Nodes.CurrencySignClause(node.startColumnTotal, node.startColumnRelative, node.startLine, currencySignValue),
+      new Nodes.CurrencySignClause(node.getStandardInfo(), currencySignValue),
       this.currentToken,
     );
   }
@@ -735,9 +712,7 @@ export class Parser {
     return this.finalizeNode(
       node,
       new Nodes.SymbolicCharactersClause(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
+        node.getStandardInfo(),
         symbolicCharacters,
         symbolicIntegers,
         inOrdinalPosition,
@@ -757,11 +732,7 @@ export class Parser {
     node.setHasError(!this.expectKeyword('COMMA', this.currentToken));
     this.nextToken();
 
-    return this.finalizeNode(
-      node,
-      new Nodes.DecimalPointClause(node.startColumnTotal, node.startColumnRelative, node.startLine),
-      this.currentToken,
-    );
+    return this.finalizeNode(node, new Nodes.DecimalPointClause(node.getStandardInfo()), this.currentToken);
   }
 
   private parseAlphabetClause(): Nodes.AlphabetClause {
@@ -821,14 +792,7 @@ export class Parser {
 
     return this.finalizeNode(
       node,
-      new Nodes.AlphabetClause(
-        node.startColumnTotal,
-        node.startColumnRelative,
-        node.startLine,
-        alphabetName,
-        alphabetType,
-        alphabetLiterals,
-      ),
+      new Nodes.AlphabetClause(node.getStandardInfo(), alphabetName, alphabetType, alphabetLiterals),
       this.currentToken,
     );
   }
@@ -870,7 +834,7 @@ export class Parser {
 
     return this.finalizeNode(
       node,
-      new Nodes.ClassClause(node.startColumnTotal, node.startColumnRelative, node.startLine, className, classLiterals),
+      new Nodes.ClassClause(node.getStandardInfo(), className, classLiterals),
       this.currentToken,
     );
   }
@@ -889,11 +853,7 @@ export class Parser {
     this.nextToken();
     node.setHasError(this.expectKeyword('SECTION', this.currentToken));
 
-    return this.finalizeNode(
-      node,
-      new Nodes.InputOutputSection(node.startColumnTotal, node.startColumnRelative, node.startLine),
-      this.currentToken,
-    );
+    return this.finalizeNode(node, new Nodes.InputOutputSection(node.getStandardInfo()), this.currentToken);
   }
 
   private parseRecordingModeClause(): Nodes.RecordingModeClause {
@@ -913,11 +873,7 @@ export class Parser {
     node.setHasError(!this.expectModeIdentifier(this.currentToken));
     this.nextToken();
 
-    return this.finalizeNode(
-      node,
-      new Nodes.RecordingModeClause(node.startColumnTotal, node.startColumnRelative, node.startLine),
-      this.currentToken,
-    );
+    return this.finalizeNode(node, new Nodes.RecordingModeClause(node.getStandardInfo()), this.currentToken);
   }
 
   private parseProgramId(): Nodes.ProgramId {
@@ -979,12 +935,7 @@ export class Parser {
 
     return this.finalizeNode(
       startNode,
-      new Nodes.ProgramId(
-        startNode.startColumnTotal,
-        startNode.startColumnRelative,
-        startNode.startLine,
-        programIdValue,
-      ),
+      new Nodes.ProgramId(startNode.getStandardInfo(), programIdValue),
       this.currentToken,
     );
   }
@@ -1012,7 +963,11 @@ export class Parser {
   }
 
   private startNode(token: Token) {
-    const node = new Node(token.startColumnTotal, token.startColumnRelative, token.startLine);
+    const node = new Node({
+      startColumnTotal: token.startColumnTotal,
+      startColumnRelative: token.startColumnRelative,
+      startLine: token.startLine,
+    });
     return node;
   }
 
