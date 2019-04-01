@@ -7,7 +7,7 @@
 // Requirements
 // ------------------------------------------------------------------------------
 
-// import { Syntax } from './syntax';
+import { Syntax } from './syntax';
 
 // ------------------------------------------------------------------------------
 // Helpers
@@ -19,12 +19,12 @@
 
 /* tslint:disable:max-classes-per-file */
 
-interface NodeStandardInfo {
+export interface NodeStandardInfo {
   startColumnTotal: number;
   startColumnRelative: number;
   startLine: number;
 }
-export class Node {
+export abstract class Node {
   public hasError: boolean = false;
   public type: string = '';
   public startColumnTotal: number = 0;
@@ -53,11 +53,6 @@ export class Node {
             \r\n`;
   };
 
-  public setHasError(hasError: boolean) {
-    // if once set to true it will stay to true
-    this.hasError = this.hasError ? true : hasError;
-  }
-
   public getStandardInfo(): NodeStandardInfo {
     return {
       startColumnTotal: this.startColumnTotal,
@@ -82,6 +77,7 @@ export class CobolSourceProgram extends Node {
     this.programId = programId;
     this.identificationDivisionContent = identificationDivisionContent;
     this.environmentDivisionContent = environmentDivisionContent;
+    this.type = Syntax.CobolSourceProgram;
   }
 }
 export class ProgramId extends Node {
@@ -89,6 +85,7 @@ export class ProgramId extends Node {
   constructor(info: NodeStandardInfo, programIdValue: string) {
     super(info);
     this.programIdValue = programIdValue;
+    this.type = Syntax.ProgramId;
   }
 }
 
@@ -112,6 +109,7 @@ export class IdentificationDivisionContent extends Node {
     this.dateWritten = dateWritten;
     this.dateCompiled = dateCompiled;
     this.security = security;
+    this.type = Syntax.IdentificationDivisionContent;
   }
 }
 export class EnvironmentDivisionContent extends Node {
@@ -125,6 +123,7 @@ export class EnvironmentDivisionContent extends Node {
     super(info);
     this.configurationSection = configurationSection;
     this.inputOutputSection = inputOutputSection;
+    this.type = Syntax.EnvironmentDivisionContent;
   }
 }
 
@@ -142,6 +141,7 @@ export class ConfigurationSection extends Node {
     this.sourceComputerParagraph = sourceComputerParagraph;
     this.objectComputerParagraph = objectComputerParagraph;
     this.specialNamesParagraph = specialNamesParagraph;
+    this.type = Syntax.ConfigurationSection;
   }
 }
 
@@ -150,6 +150,7 @@ export class SourceComputerParagraph extends Node {
   constructor(info: NodeStandardInfo, sourceComputerValue: string) {
     super(info);
     this.sourceComputerValue = sourceComputerValue;
+    this.type = Syntax.SourceComputerParagraph;
   }
 }
 
@@ -171,6 +172,7 @@ export class ObjectComputerParagraph extends Node {
     this.memorySizeValue = memorySizeValue;
     this.sequenceValue = sequenceValue;
     this.segmentLimitValue = segmentLimitValue;
+    this.type = Syntax.ObjectComputerParagraph;
   }
 }
 export class SpecialNamesParagraph extends Node {
@@ -191,6 +193,7 @@ export class SpecialNamesParagraph extends Node {
     this.specialNamesParagraphClauses = specialNamesParagraphClauses;
     this.currencySignClause = currencySignClause;
     this.decimalPointClause = decimalPointClause;
+    this.type = Syntax.SpecialNamesParagraph;
   }
 }
 
@@ -212,12 +215,25 @@ export class SpecialNamesParagraphStatusPhrase extends Node {
     this.mnemonicValue = mnemonicValue;
     this.onCondition = onCondition;
     this.offCondition = offCondition;
+    this.type = Syntax.SpecialNamesParagraphStatusPhrase;
   }
 }
 
-export class InputOutputSection extends Node {}
+export class InputOutputSection extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.InputOutputSection;
+  }
+}
 
-export class RecordingModeClause extends Node {}
+export class RecordingModeClause extends Node {
+  readonly recordingMode: string;
+  constructor(info: NodeStandardInfo, recordingMode: string) {
+    super(info);
+    this.recordingMode = recordingMode;
+    this.type = Syntax.RecordingModeClause;
+  }
+}
 
 // TODO
 export type Condition = CombinableCondition | CombinedCondition;
@@ -241,6 +257,7 @@ export class AlphabetClause extends Node {
     this.alphabetName = alphabetName;
     this.alphabetType = alphabetType;
     this.alphabetLiterals = alphabetLiterals;
+    this.type = Syntax.AlphabetClause;
   }
 }
 export class SymbolicCharactersClause extends Node {
@@ -258,6 +275,7 @@ export class SymbolicCharactersClause extends Node {
     this.symbolicCharacters = symbolicCharacters;
     this.symbolicIntegers = symbolicIntegers;
     this.inOrdinalPosition = inOrdinalPosition;
+    this.type = Syntax.SymbolicCharactersClause;
   }
 }
 export class ClassClause extends Node {
@@ -268,6 +286,7 @@ export class ClassClause extends Node {
     super(info);
     this.className = className;
     this.classLiterals = classLiterals;
+    this.type = Syntax.ClassClause;
   }
 }
 export class CurrencySignClause extends Node {
@@ -276,11 +295,16 @@ export class CurrencySignClause extends Node {
   constructor(info: NodeStandardInfo, currencySignValue: string) {
     super(info);
     this.currencySignValue = currencySignValue;
+    this.type = Syntax.CurrencySignClause;
   }
 }
 export class DecimalPointClause extends Node {
   // if Node is available isComma is always true
   readonly isComma: boolean = true;
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.DecimalPointClause;
+  }
 }
 
 export class Literal {

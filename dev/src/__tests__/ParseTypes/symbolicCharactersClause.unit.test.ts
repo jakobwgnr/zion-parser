@@ -10,7 +10,7 @@ test('Full statement', () => {
       fromPath: false,
     },
   );
-  expect(ast.nodes[0].type).toBe(Syntax.SymbolicCharacter);
+  expect(ast.nodes[0].type).toBe(Syntax.SymbolicCharactersClause);
   expect(ast.errors.length).toBe(0);
   expect((ast.nodes[0] as Nodes.SymbolicCharactersClause).inOrdinalPosition).toBe('ASDF');
   expect((ast.nodes[0] as Nodes.SymbolicCharactersClause).symbolicCharacters[0]).toBe('A');
