@@ -267,6 +267,15 @@ export class AssignClause extends Node {
   }
 }
 
+export class ReserveClause extends Node {
+  reserveAreaCount: string = '';
+  constructor(info: NodeStandardInfo, reserveAreaCount: string) {
+    super(info);
+    this.type = Syntax.ReserveClause;
+    this.reserveAreaCount = reserveAreaCount;
+  }
+}
+
 export class IOControlParagraph extends Node {
   constructor(info: NodeStandardInfo) {
     super(info);

@@ -104,6 +104,9 @@ export class Parser {
             case 'ASSIGN':
               node = this.parseAssignClause();
               break;
+            case 'RESERVE':
+              node = this.parseReserveClause();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -798,6 +801,22 @@ export class Parser {
     return this.finalizeNode(new Nodes.AssignClause(startNodeInfo, assignmentName), this.currentToken);
   }
 
+  private parseReserveClause(): Nodes.ReserveClause | null {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let reserveAreaCount: string = '';
+
+    this.nextToken();
+
+    if (this.expectNumeric()) {
+      reserveAreaCount = this.currentToken.value;
+    }
+    this.nextToken();
+
+    this.skipOptionalKeywords(['AREA', 'AREAS']);
+
+    return this.finalizeNode(new Nodes.ReserveClause(startNodeInfo, reserveAreaCount), this.currentToken);
+  }
+
   // TODO Impl + test missing
   private parseIOControlParagraph(): Nodes.IOControlParagraph | null {
     const startNodeInfo = this.startNode(this.currentToken);
@@ -1008,6 +1027,12 @@ export class Parser {
 
   private skipOptionalKeyword(keyword: string) {
     if (this.isOptionalKeyword(keyword)) {
+      this.nextToken();
+    }
+  }
+
+  private skipOptionalKeywords(keywords: string[]) {
+    if (this.isSeveralOptionalKeywords(keywords)) {
       this.nextToken();
     }
   }
