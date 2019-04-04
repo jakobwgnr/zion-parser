@@ -89,6 +89,21 @@ export class Parser {
             case 'SYMBOLIC':
               node = this.parseSymbolicCharactersClause();
               break;
+            case 'INPUT-OUTPUT':
+              node = this.parseInputOutputSection();
+              break;
+            case 'FILE-CONTROL':
+              node = this.parseFileControlParagraph();
+              break;
+            case 'I-O-CONTROL':
+              node = this.parseIOControlParagraph();
+              break;
+            case 'SELECT':
+              node = this.parseSelectClause();
+              break;
+            case 'ASSIGN':
+              node = this.parseAssignClause();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -704,13 +719,90 @@ export class Parser {
   }
 
   // TODO Impl + test missing
-  private parseInputOutputSection(): Nodes.InputOutputSection {
+  private parseInputOutputSection(): Nodes.InputOutputSection | null {
     const startNodeInfo = this.startNode(this.currentToken);
+    let fileControlParagraph: Nodes.FileControlParagraph | null = null;
+    let ioControlParagraph: Nodes.IOControlParagraph | null = null;
 
     this.nextToken();
     this.expectKeyword('SECTION');
+    this.nextToken();
+    this.expectTerminator();
+    this.nextToken();
 
-    return this.finalizeNode(new Nodes.InputOutputSection(startNodeInfo), this.currentToken);
+    if (this.isOptionalKeyword('FILE-CONTROL')) {
+      fileControlParagraph = this.parseFileControlParagraph();
+    }
+
+    if (this.isOptionalKeyword('I-O-CONTROL')) {
+      ioControlParagraph = this.parseIOControlParagraph();
+    }
+
+    return this.finalizeNode(
+      new Nodes.InputOutputSection(startNodeInfo, fileControlParagraph, ioControlParagraph),
+      this.currentToken,
+    );
+  }
+
+  // TODO Impl + test missing
+  private parseFileControlParagraph(): Nodes.FileControlParagraph | null {
+    const startNodeInfo = this.startNode(this.currentToken);
+    const fileControlEntries: Nodes.FileControlEntry[] = [];
+
+    this.expectTerminator();
+    this.nextToken();
+
+    while (this.isOptionalKeyword('SELECT')) {
+      fileControlEntries.push(this.parseFileControlEntry());
+    }
+
+    return this.finalizeNode(new Nodes.FileControlParagraph(startNodeInfo), this.currentToken);
+  }
+
+  // TODO Impl + test missing
+  private parseFileControlEntry(): Nodes.FileControlEntry {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.nextToken();
+    // const selectClause = this.parseSelectClause();
+
+    return this.finalizeNode(new Nodes.FileControlEntry(startNodeInfo), this.currentToken);
+  }
+
+  private parseSelectClause(): Nodes.SelectClause | null {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let fileName: string = '';
+
+    this.nextToken();
+
+    this.skipOptionalKeyword('OPTIONAL');
+
+    fileName = this.currentToken.value;
+    this.nextToken();
+
+    return this.finalizeNode(new Nodes.SelectClause(startNodeInfo, fileName), this.currentToken);
+  }
+
+  private parseAssignClause(): Nodes.AssignClause | null {
+    const startNodeInfo = this.startNode(this.currentToken);
+    const assignmentName: string[] = [];
+
+    this.nextToken();
+
+    this.skipOptionalKeyword('TO');
+    while (this.isOptionalIdentifier()) {
+      assignmentName.push(this.currentToken.value);
+      this.nextToken();
+    }
+
+    return this.finalizeNode(new Nodes.AssignClause(startNodeInfo, assignmentName), this.currentToken);
+  }
+
+  // TODO Impl + test missing
+  private parseIOControlParagraph(): Nodes.IOControlParagraph | null {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    return this.finalizeNode(new Nodes.IOControlParagraph(startNodeInfo), this.currentToken);
   }
 
   private parseRecordingModeClause(): Nodes.RecordingModeClause {

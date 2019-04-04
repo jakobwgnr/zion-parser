@@ -220,9 +220,57 @@ export class SpecialNamesParagraphStatusPhrase extends Node {
 }
 
 export class InputOutputSection extends Node {
-  constructor(info: NodeStandardInfo) {
+  readonly fileControlParagraph: FileControlParagraph | null;
+  readonly ioControlParagraph: IOControlParagraph | null;
+
+  constructor(
+    info: NodeStandardInfo,
+    fileControlParagraph: FileControlParagraph | null,
+    ioControlParagraph: IOControlParagraph | null,
+  ) {
     super(info);
     this.type = Syntax.InputOutputSection;
+    this.fileControlParagraph = fileControlParagraph;
+    this.ioControlParagraph = ioControlParagraph;
+  }
+}
+
+export class FileControlParagraph extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.FileControlParagraph;
+  }
+}
+
+export class FileControlEntry extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.FileControlEntry;
+  }
+}
+
+export class SelectClause extends Node {
+  fileName: string = '';
+  constructor(info: NodeStandardInfo, fileName: string) {
+    super(info);
+    this.type = Syntax.SelectClause;
+    this.fileName = fileName;
+  }
+}
+
+export class AssignClause extends Node {
+  assignmentName: string[] = [];
+  constructor(info: NodeStandardInfo, assignmentName: string[]) {
+    super(info);
+    this.type = Syntax.AssignClause;
+    this.assignmentName = assignmentName;
+  }
+}
+
+export class IOControlParagraph extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.IOControlParagraph;
   }
 }
 
