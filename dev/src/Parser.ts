@@ -115,6 +115,9 @@ export class Parser {
             case 'LENGTH':
               node = this.parseSpecialRegister();
               break;
+            case 'RECORD':
+              node = this.parseRecordClause();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -841,7 +844,7 @@ export class Parser {
         value = this.currentToken.value;
       }
       this.nextToken();
-      
+
       while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
         this.skipOptionalKeywords(['IN', 'OF']);
         dataNames.push(this.currentToken.value);
@@ -868,6 +871,39 @@ export class Parser {
       new Nodes.SpecialRegister(startNodeInfo, specialRegisterType, optionalValue),
       this.currentToken,
     );
+  }
+
+  private parseRecordClause(): Nodes.RecordDelimiterClause | Nodes.RecordKeyClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string = '';
+
+    this.nextToken();
+
+    if (this.isOptionalKeyword('DELIMITER')) {
+      this.nextToken();
+      this.skipOptionalKeyword('IS');
+      value = this.currentToken.value;
+      this.nextToken();
+
+      return this.finalizeNode(new Nodes.RecordDelimiterClause(startNodeInfo, value), this.currentToken);
+    } else {
+      const dataNames: string[] = [];
+      this.skipOptionalKeyword('KEY');
+      this.skipOptionalKeyword('IS');
+
+      if (this.expectIdentifier()) {
+        value = this.currentToken.value;
+      }
+      this.nextToken();
+
+      while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+        this.skipOptionalKeywords(['IN', 'OF']);
+        dataNames.push(this.currentToken.value);
+        this.nextToken();
+      }
+
+      return this.finalizeNode(new Nodes.RecordKeyClause(startNodeInfo, value, dataNames), this.currentToken);
+    }
   }
 
   // TODO Impl + test missing

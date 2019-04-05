@@ -287,6 +287,26 @@ export class PaddingCharacterClause extends Node {
   }
 }
 
+export class RecordDelimiterClause extends Node {
+  delimiterValue: string = '';
+  constructor(info: NodeStandardInfo, delimiterValue: string) {
+    super(info);
+    this.type = Syntax.RecordDelimiterClause;
+    this.delimiterValue = delimiterValue;
+  }
+}
+
+export class RecordKeyClause extends Node {
+  delimiterValue: string = '';
+  dataNames: string[] = [];
+  constructor(info: NodeStandardInfo, delimiterValue: string, dataNames: string[]) {
+    super(info);
+    this.type = Syntax.RecordKeyClause;
+    this.delimiterValue = delimiterValue;
+    this.dataNames = dataNames;
+  }
+}
+
 export class SpecialRegister extends Node {
   specialRegisterType: string = '';
   optionalValue: string = '';
