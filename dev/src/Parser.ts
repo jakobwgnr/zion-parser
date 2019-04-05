@@ -107,6 +107,14 @@ export class Parser {
             case 'RESERVE':
               node = this.parseReserveClause();
               break;
+            case 'PADDING':
+              node = this.parsePaddingCharacterClause();
+              break;
+            case 'WHEN-COMPILED':
+            case 'ADDRESS':
+            case 'LENGTH':
+              node = this.parseSpecialRegister();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -817,6 +825,51 @@ export class Parser {
     return this.finalizeNode(new Nodes.ReserveClause(startNodeInfo, reserveAreaCount), this.currentToken);
   }
 
+  private parsePaddingCharacterClause(): Nodes.PaddingCharacterClause | null {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string | Nodes.SpecialRegister = '';
+    const dataNames: string[] = [];
+    this.nextToken();
+
+    this.skipOptionalKeyword('CHARACTER');
+    this.skipOptionalKeyword('IS');
+
+    if (this.isSpecialRegisterKeyword()) {
+      value = this.parseSpecialRegister();
+    } else {
+      if (this.expectIdentifier()) {
+        value = this.currentToken.value;
+      }
+      this.nextToken();
+      
+      while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+        this.skipOptionalKeywords(['IN', 'OF']);
+        dataNames.push(this.currentToken.value);
+        this.nextToken();
+      }
+    }
+
+    return this.finalizeNode(new Nodes.PaddingCharacterClause(startNodeInfo, value, dataNames), this.currentToken);
+  }
+
+  private parseSpecialRegister(): Nodes.SpecialRegister {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let optionalValue: string = '';
+    const specialRegisterType: string = this.currentToken.value;
+    this.nextToken();
+
+    if (specialRegisterType === 'ADDRESS' || specialRegisterType === 'LENGTH') {
+      this.skipOptionalKeyword('OF');
+      optionalValue = this.currentToken.value;
+      this.nextToken();
+    }
+
+    return this.finalizeNode(
+      new Nodes.SpecialRegister(startNodeInfo, specialRegisterType, optionalValue),
+      this.currentToken,
+    );
+  }
+
   // TODO Impl + test missing
   private parseIOControlParagraph(): Nodes.IOControlParagraph | null {
     const startNodeInfo = this.startNode(this.currentToken);
@@ -980,6 +1033,26 @@ export class Parser {
       return false;
     }
     return true;
+  }
+
+  private isSpecialRegisterKeyword(): boolean {
+    return (
+      this.currentToken.type === TokenType.Keyword &&
+      (this.currentToken.value === 'ADDRESS' ||
+        this.currentToken.value === 'DEBUG-ITEM' ||
+        this.currentToken.value === 'LENGTH' ||
+        this.currentToken.value === 'RETURN-CODE' ||
+        this.currentToken.value === 'SHIFT-OUT' ||
+        this.currentToken.value === 'SHIFT-IN' ||
+        this.currentToken.value === 'SORT-CONTROL' ||
+        this.currentToken.value === 'SORT-CORE-SIZE' ||
+        this.currentToken.value === 'SORT-FILE-SIZE' ||
+        this.currentToken.value === 'SORT-MESSAGE' ||
+        this.currentToken.value === 'SORT-MODE-SIZE' ||
+        this.currentToken.value === 'SORT-RETURN' ||
+        this.currentToken.value === 'TALLY' ||
+        this.currentToken.value === 'WHEN-COMPILED')
+    );
   }
 
   private expectIdentifier(): boolean {

@@ -276,6 +276,28 @@ export class ReserveClause extends Node {
   }
 }
 
+export class PaddingCharacterClause extends Node {
+  paddingCaracterValue: string | SpecialRegister = '';
+  dataNames: string[] = [];
+  constructor(info: NodeStandardInfo, paddingCaracterValue: string | SpecialRegister, dataNames: string[]) {
+    super(info);
+    this.type = Syntax.PaddingCharacterClause;
+    this.paddingCaracterValue = paddingCaracterValue;
+    this.dataNames = dataNames;
+  }
+}
+
+export class SpecialRegister extends Node {
+  specialRegisterType: string = '';
+  optionalValue: string = '';
+  constructor(info: NodeStandardInfo, specialRegisterType: string, optionalValue: string) {
+    super(info);
+    this.type = Syntax.SpecialRegister;
+    this.specialRegisterType = specialRegisterType;
+    this.optionalValue = optionalValue;
+  }
+}
+
 export class IOControlParagraph extends Node {
   constructor(info: NodeStandardInfo) {
     super(info);
