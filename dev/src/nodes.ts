@@ -331,6 +331,27 @@ export class RelativeKeyClause extends Node {
   }
 }
 
+export class FileStatusClause extends Node {
+  value: string = '';
+  optionalValue: string = '';
+  dataNames: string[] = [];
+  optionalDataNames: string[] = [];
+  constructor(
+    info: NodeStandardInfo,
+    value: string,
+    dataNames: string[],
+    optionalValue: string,
+    optionalDataNames: string[],
+  ) {
+    super(info);
+    this.type = Syntax.FileStatusClause;
+    this.value = value;
+    this.dataNames = dataNames;
+    this.optionalValue = optionalValue;
+    this.optionalDataNames = optionalDataNames;
+  }
+}
+
 export class PasswordClause extends Node {
   value: string = '';
   constructor(info: NodeStandardInfo, value: string) {

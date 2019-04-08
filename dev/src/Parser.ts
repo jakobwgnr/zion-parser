@@ -127,6 +127,10 @@ export class Parser {
             case 'RELATIVE':
               node = this.parseRelativeKeyClause();
               break;
+            case 'FILE':
+            case 'STATUS':
+              node = this.parseFileStatusClause();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -947,6 +951,7 @@ export class Parser {
       this.currentToken,
     );
   }
+
   private parseRelativeKeyClause(): Nodes.RelativeKeyClause {
     const startNodeInfo = this.startNode(this.currentToken);
     let value: string = '';
@@ -968,6 +973,46 @@ export class Parser {
     }
 
     return this.finalizeNode(new Nodes.RelativeKeyClause(startNodeInfo, value, dataNames), this.currentToken);
+  }
+
+  private parseFileStatusClause(): Nodes.RelativeKeyClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string = '';
+    const dataNames: string[] = [];
+    let optionalValue: string = '';
+    const optionalDataNames: string[] = [];
+
+    this.skipOptionalKeyword('FILE');
+    this.nextToken();
+
+    this.skipOptionalKeyword('IS');
+
+    if (this.expectIdentifier()) {
+      value = this.currentToken.value;
+    }
+    this.nextToken();
+
+    while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+      this.skipOptionalKeywords(['IN', 'OF']);
+      dataNames.push(this.currentToken.value);
+      this.nextToken();
+    }
+
+    if (this.isOptionalIdentifier()) {
+      optionalValue = this.currentToken.value;
+    }
+    this.nextToken();
+
+    while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+      this.skipOptionalKeywords(['IN', 'OF']);
+      optionalDataNames.push(this.currentToken.value);
+      this.nextToken();
+    }
+
+    return this.finalizeNode(
+      new Nodes.FileStatusClause(startNodeInfo, value, dataNames, optionalValue, optionalDataNames),
+      this.currentToken,
+    );
   }
 
   private parsePasswordClause(): Nodes.PasswordClause {
