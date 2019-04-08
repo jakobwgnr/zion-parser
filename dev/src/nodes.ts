@@ -307,6 +307,28 @@ export class RecordKeyClause extends Node {
   }
 }
 
+export class AlternateRecordKeyClause extends Node {
+  value: string = '';
+  dataNames: string[] = [];
+  passwordClause: PasswordClause | null = null;
+  constructor(info: NodeStandardInfo, value: string, dataNames: string[], passwordClause: PasswordClause | null) {
+    super(info);
+    this.type = Syntax.AlternateRecordKeyClause;
+    this.value = value;
+    this.dataNames = dataNames;
+    this.passwordClause = passwordClause;
+  }
+}
+
+export class PasswordClause extends Node {
+  value: string = '';
+  constructor(info: NodeStandardInfo, value: string) {
+    super(info);
+    this.type = Syntax.PasswordClause;
+    this.value = value;
+  }
+}
+
 export class SpecialRegister extends Node {
   specialRegisterType: string = '';
   optionalValue: string = '';

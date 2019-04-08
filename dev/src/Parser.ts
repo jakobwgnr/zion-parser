@@ -118,6 +118,12 @@ export class Parser {
             case 'RECORD':
               node = this.parseRecordClause();
               break;
+            case 'PASSWORD':
+              node = this.parsePasswordClause();
+              break;
+            case 'ALTERNATE':
+              node = this.parseAlternateRecordKeyClause();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -904,6 +910,55 @@ export class Parser {
 
       return this.finalizeNode(new Nodes.RecordKeyClause(startNodeInfo, value, dataNames), this.currentToken);
     }
+  }
+
+  // TODO Test
+  private parseAlternateRecordKeyClause(): Nodes.AlternateRecordKeyClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string = '';
+    const dataNames: string[] = [];
+    let passwordClause: Nodes.PasswordClause | null = null;
+
+    this.nextToken();
+    this.skipOptionalKeyword('RECORD');
+    this.skipOptionalKeyword('KEY');
+    this.skipOptionalKeyword('IS');
+
+    if (this.expectIdentifier()) {
+      value = this.currentToken.value;
+    }
+    this.nextToken();
+
+    while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+      this.skipOptionalKeywords(['IN', 'OF']);
+      dataNames.push(this.currentToken.value);
+      this.nextToken();
+    }
+    if (this.isOptionalKeyword('PASSWORD')) {
+      passwordClause = this.parsePasswordClause();
+    }
+    this.skipOptionalKeyword('WITH');
+    this.skipOptionalKeyword('DUPLICATES');
+
+    return this.finalizeNode(
+      new Nodes.AlternateRecordKeyClause(startNodeInfo, value, dataNames, passwordClause),
+      this.currentToken,
+    );
+  }
+
+  private parsePasswordClause(): Nodes.PasswordClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let dataName: string = '';
+
+    this.nextToken();
+    this.skipOptionalKeyword('IS');
+
+    if (this.expectIdentifier()) {
+      dataName = this.currentToken.value;
+    }
+    this.nextToken();
+
+    return this.finalizeNode(new Nodes.PasswordClause(startNodeInfo, dataName), this.currentToken);
   }
 
   // TODO Impl + test missing
