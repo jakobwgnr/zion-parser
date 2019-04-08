@@ -124,6 +124,9 @@ export class Parser {
             case 'ALTERNATE':
               node = this.parseAlternateRecordKeyClause();
               break;
+            case 'RELATIVE':
+              node = this.parseRelativeKeyClause();
+              break;
             default:
               this.errorHandler.unexpectedTokenError(
                 this.currentToken,
@@ -912,7 +915,6 @@ export class Parser {
     }
   }
 
-  // TODO Test
   private parseAlternateRecordKeyClause(): Nodes.AlternateRecordKeyClause {
     const startNodeInfo = this.startNode(this.currentToken);
     let value: string = '';
@@ -944,6 +946,28 @@ export class Parser {
       new Nodes.AlternateRecordKeyClause(startNodeInfo, value, dataNames, passwordClause),
       this.currentToken,
     );
+  }
+  private parseRelativeKeyClause(): Nodes.RelativeKeyClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string = '';
+    const dataNames: string[] = [];
+
+    this.nextToken();
+    this.skipOptionalKeyword('KEY');
+    this.skipOptionalKeyword('IS');
+
+    if (this.expectIdentifier()) {
+      value = this.currentToken.value;
+    }
+    this.nextToken();
+
+    while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+      this.skipOptionalKeywords(['IN', 'OF']);
+      dataNames.push(this.currentToken.value);
+      this.nextToken();
+    }
+
+    return this.finalizeNode(new Nodes.RelativeKeyClause(startNodeInfo, value, dataNames), this.currentToken);
   }
 
   private parsePasswordClause(): Nodes.PasswordClause {

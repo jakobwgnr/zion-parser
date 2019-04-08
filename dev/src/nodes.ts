@@ -320,6 +320,17 @@ export class AlternateRecordKeyClause extends Node {
   }
 }
 
+export class RelativeKeyClause extends Node {
+  value: string = '';
+  dataNames: string[] = [];
+  constructor(info: NodeStandardInfo, value: string, dataNames: string[]) {
+    super(info);
+    this.type = Syntax.RelativeKeyClause;
+    this.value = value;
+    this.dataNames = dataNames;
+  }
+}
+
 export class PasswordClause extends Node {
   value: string = '';
   constructor(info: NodeStandardInfo, value: string) {
