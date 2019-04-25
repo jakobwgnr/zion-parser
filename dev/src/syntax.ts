@@ -66,14 +66,17 @@ export const Syntax = {
   RecordingModeClause: 'RecordingModeClause',
   CodeSetClause: 'CodeSetClause',
 
-  DataDescriptionEntry: 'dataDescriptionEntry',
+  LevelNumber: 'LevelNumber',
+
+  DataDescriptionEntry: 'DataDescriptionEntry',
 
   // dataDescriptionEntryClauses
-  RedefinesClause: 'redefinesClause',
+  RedefinesClause: 'RedefinesClause',
   BlankWhenZeroClause: 'BlankWhenZeroClause',
   JustifiedClause: 'JustifiedClause',
   OccursClause: 'OccursClause',
   PictureClause: 'PictureClause',
+  PictureString: 'PictureString',
   SignClause: 'SignClause',
   SyncronizedClause: 'SyncronizedClause',
   UsageClause: 'UsageClause',
@@ -206,4 +209,5 @@ export const Syntax = {
   FigurativeConstant: 'FigurativeConstant',
   Literal: 'Literal',
   SpecialRegister: 'SpecialRegister',
+  QuotedPseudoText: 'QuotedPseudoText',
 };

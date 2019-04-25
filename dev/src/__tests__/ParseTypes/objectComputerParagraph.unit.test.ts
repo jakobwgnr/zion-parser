@@ -65,7 +65,7 @@ describe('objectComputerParagraph working correctly', () => {
       },
     );
     expect(ast.nodes[0].type).toBe(Syntax.ObjectComputerParagraph);
-    expect(ast.errors.length).toBe(1);
+    expect(ast.errors.length).toBeGreaterThan(0);
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).objectComputerValue).toBe('COMNAME');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).memorySizeValue).toBe('123');
     expect((ast.nodes[0] as Nodes.ObjectComputerParagraph).sequenceValue).toBe('SEQ');

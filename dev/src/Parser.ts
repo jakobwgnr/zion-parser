@@ -140,7 +140,9 @@ export class Parser {
               this.nextToken();
               break;
           }
-          this.nodeList.push(node);
+          break;
+        case TokenType.NumericLiteral:
+          node = this.parseDataDescriptionEntry();
           break;
         default:
           this.errorHandler.unexpectedTokenError(
@@ -151,6 +153,7 @@ export class Parser {
           this.nextToken();
           break;
       }
+      this.nodeList.push(node);
     }
 
     return this.nodeList;
@@ -187,20 +190,9 @@ export class Parser {
     /* istanbul ignore else */
     if (this.isOptionalKeyword('AUTHOR')) {
       this.nextToken();
-
       this.skipOptionalTerminator();
 
-      if (this.expectIdentifier()) {
-        author = author.concat(this.currentToken.value);
-        this.nextToken();
-        while (this.currentToken.type === TokenType.Identifier) {
-          author = author.concat(' ', this.currentToken.value);
-          this.nextToken();
-        }
-        this.skipOptionalTerminator();
-      } else {
-        this.nextToken();
-      }
+      author = this.parseCommentEntry();
     }
 
     /* istanbul ignore else */
@@ -209,17 +201,7 @@ export class Parser {
 
       this.skipOptionalTerminator();
 
-      if (this.expectIdentifier()) {
-        installation = installation.concat(this.currentToken.value);
-        this.nextToken();
-        while (this.currentToken.type === TokenType.Identifier) {
-          installation = installation.concat(' ', this.currentToken.value);
-          this.nextToken();
-        }
-        this.skipOptionalTerminator();
-      } else {
-        this.nextToken();
-      }
+      installation = this.parseCommentEntry();
     }
 
     /* istanbul ignore else */
@@ -228,18 +210,7 @@ export class Parser {
 
       this.skipOptionalTerminator();
 
-      if (this.expectIdentifier()) {
-        dateWritten = dateWritten.concat(this.currentToken.value);
-        this.nextToken();
-        while (this.currentToken.type === TokenType.Identifier) {
-          dateWritten = dateWritten.concat(' ', this.currentToken.value);
-          this.nextToken();
-        }
-
-        this.skipOptionalTerminator();
-      } else {
-        this.nextToken();
-      }
+      dateWritten = this.parseCommentEntry();
     }
 
     /* istanbul ignore else */
@@ -248,18 +219,7 @@ export class Parser {
 
       this.skipOptionalTerminator();
 
-      if (this.expectIdentifier()) {
-        dateCompiled = dateCompiled.concat(this.currentToken.value);
-        this.nextToken();
-        while (this.currentToken.type === TokenType.Identifier) {
-          dateCompiled = dateCompiled.concat(' ', this.currentToken.value);
-          this.nextToken();
-        }
-
-        this.skipOptionalTerminator();
-      } else {
-        this.nextToken();
-      }
+      dateCompiled = this.parseCommentEntry();
     }
 
     /* istanbul ignore else */
@@ -268,18 +228,7 @@ export class Parser {
 
       this.skipOptionalTerminator();
 
-      if (this.expectIdentifier()) {
-        security = security.concat(this.currentToken.value);
-        this.nextToken();
-        while (this.currentToken.type === TokenType.Identifier) {
-          security = security.concat(' ', this.currentToken.value);
-          this.nextToken();
-        }
-
-        this.skipOptionalTerminator();
-      } else {
-        this.nextToken();
-      }
+      security = this.parseCommentEntry();
     }
 
     return this.finalizeNode(
@@ -661,7 +610,7 @@ export class Parser {
     const startNodeInfo = this.startNode(this.currentToken);
     let alphabetName: string = '';
     let alphabetType: string = '';
-    const alphabetLiterals: Nodes.Literal[] = [];
+    const alphabetLiterals: Nodes.AlphabetLiteral[] = [];
 
     this.nextToken();
     if (this.expectIdentifier()) {
@@ -677,7 +626,7 @@ export class Parser {
     } else {
       if (this.expectIdentifier()) {
         while (this.isOptionalIdentifier()) {
-          const alphabetLiteral: Nodes.Literal = new Nodes.Literal();
+          const alphabetLiteral: Nodes.AlphabetLiteral = new Nodes.AlphabetLiteral();
           alphabetLiteral.literal = this.currentToken.value;
           this.nextToken();
           if (this.isSeveralOptionalKeywords(['THROUGH', 'THRU'])) {
@@ -711,7 +660,7 @@ export class Parser {
   private parseClassClause(): Nodes.ClassClause {
     const startNodeInfo = this.startNode(this.currentToken);
     let className: string = '';
-    const classLiterals: Nodes.Literal[] = [];
+    const classLiterals: Nodes.AlphabetLiteral[] = [];
 
     this.nextToken();
     if (this.expectIdentifier()) {
@@ -722,7 +671,7 @@ export class Parser {
     this.skipOptionalKeyword('IS');
 
     while (this.isOptionalIdentifier()) {
-      const classLiteral: Nodes.Literal = new Nodes.Literal();
+      const classLiteral: Nodes.AlphabetLiteral = new Nodes.AlphabetLiteral();
       classLiteral.literal = this.currentToken.value;
       this.nextToken();
       if (this.isSeveralOptionalKeywords(['THROUGH', 'THRU'])) {
@@ -776,6 +725,7 @@ export class Parser {
     const startNodeInfo = this.startNode(this.currentToken);
     const fileControlEntries: Nodes.FileControlEntry[] = [];
 
+    this.nextToken();
     this.expectTerminator();
     this.nextToken();
 
@@ -783,29 +733,30 @@ export class Parser {
       fileControlEntries.push(this.parseFileControlEntry());
     }
 
-    return this.finalizeNode(new Nodes.FileControlParagraph(startNodeInfo), this.currentToken);
+    return this.finalizeNode(new Nodes.FileControlParagraph(startNodeInfo, fileControlEntries), this.currentToken);
   }
 
   // TODO Impl + test missing
   private parseFileControlEntry(): Nodes.FileControlEntry {
     const startNodeInfo = this.startNode(this.currentToken);
 
-    this.nextToken();
-    // const selectClause = this.parseSelectClause();
+    const selectClause = this.parseSelectClause();
 
-    return this.finalizeNode(new Nodes.FileControlEntry(startNodeInfo), this.currentToken);
+    const assignClause = this.parseAssignClause();
+
+    return this.finalizeNode(new Nodes.FileControlEntry(startNodeInfo, selectClause, assignClause), this.currentToken);
   }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:select-clause
 
   private parseSelectClause(): Nodes.SelectClause | null {
     const startNodeInfo = this.startNode(this.currentToken);
-    let fileName: string = '';
 
     this.nextToken();
 
     this.skipOptionalKeyword('OPTIONAL');
 
-    fileName = this.currentToken.value;
-    this.nextToken();
+    const fileName: string = this.parseFileName();
 
     return this.finalizeNode(new Nodes.SelectClause(startNodeInfo, fileName), this.currentToken);
   }
@@ -843,29 +794,36 @@ export class Parser {
 
   private parsePaddingCharacterClause(): Nodes.PaddingCharacterClause | null {
     const startNodeInfo = this.startNode(this.currentToken);
-    let value: string | Nodes.SpecialRegister = '';
-    const dataNames: string[] = [];
     this.nextToken();
 
     this.skipOptionalKeyword('CHARACTER');
     this.skipOptionalKeyword('IS');
 
-    if (this.isSpecialRegisterKeyword()) {
-      value = this.parseSpecialRegister();
-    } else {
-      if (this.expectIdentifier()) {
-        value = this.currentToken.value;
-      }
-      this.nextToken();
+    const qualifiedDataName: Nodes.QualifiedDataName = this.parseQualifiedDataName();
 
-      while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
-        this.skipOptionalKeywords(['IN', 'OF']);
-        dataNames.push(this.currentToken.value);
-        this.nextToken();
-      }
-    }
+    return this.finalizeNode(new Nodes.PaddingCharacterClause(startNodeInfo, qualifiedDataName), this.currentToken);
+  }
 
-    return this.finalizeNode(new Nodes.PaddingCharacterClause(startNodeInfo, value, dataNames), this.currentToken);
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:special-register
+
+  private isSpecialRegister(): boolean {
+    return (
+      this.currentToken.type === TokenType.Keyword &&
+      (this.currentToken.value === 'ADDRESS' ||
+        this.currentToken.value === 'DEBUG-ITEM' ||
+        this.currentToken.value === 'LENGTH' ||
+        this.currentToken.value === 'RETURN-CODE' ||
+        this.currentToken.value === 'SHIFT-OUT' ||
+        this.currentToken.value === 'SHIFT-IN' ||
+        this.currentToken.value === 'SORT-CONTROL' ||
+        this.currentToken.value === 'SORT-CORE-SIZE' ||
+        this.currentToken.value === 'SORT-FILE-SIZE' ||
+        this.currentToken.value === 'SORT-MESSAGE' ||
+        this.currentToken.value === 'SORT-MODE-SIZE' ||
+        this.currentToken.value === 'SORT-RETURN' ||
+        this.currentToken.value === 'TALLY' ||
+        this.currentToken.value === 'WHEN-COMPILED')
+    );
   }
 
   private parseSpecialRegister(): Nodes.SpecialRegister {
@@ -885,7 +843,6 @@ export class Parser {
       this.currentToken,
     );
   }
-
   private parseRecordClause(): Nodes.RecordDelimiterClause | Nodes.RecordKeyClause {
     const startNodeInfo = this.startNode(this.currentToken);
     let value: string = '';
@@ -1161,6 +1118,7 @@ export class Parser {
     return true;
   }
 
+  /* istanbul ignore next */
   private expectSeveralKeywords(keywords: string[]): boolean {
     if (this.currentToken.type !== TokenType.Keyword || !keywords.includes(this.currentToken.value)) {
       this.errorHandler.unexpectedTokenError(
@@ -1174,6 +1132,7 @@ export class Parser {
     return true;
   }
 
+  /* istanbul ignore next */
   private expectModeIdentifier(): boolean {
     if (
       this.currentToken.type !== TokenType.Identifier ||
@@ -1195,26 +1154,1995 @@ export class Parser {
     return true;
   }
 
-  private isSpecialRegisterKeyword(): boolean {
-    return (
-      this.currentToken.type === TokenType.Keyword &&
-      (this.currentToken.value === 'ADDRESS' ||
-        this.currentToken.value === 'DEBUG-ITEM' ||
-        this.currentToken.value === 'LENGTH' ||
-        this.currentToken.value === 'RETURN-CODE' ||
-        this.currentToken.value === 'SHIFT-OUT' ||
-        this.currentToken.value === 'SHIFT-IN' ||
-        this.currentToken.value === 'SORT-CONTROL' ||
-        this.currentToken.value === 'SORT-CORE-SIZE' ||
-        this.currentToken.value === 'SORT-FILE-SIZE' ||
-        this.currentToken.value === 'SORT-MESSAGE' ||
-        this.currentToken.value === 'SORT-MODE-SIZE' ||
-        this.currentToken.value === 'SORT-RETURN' ||
-        this.currentToken.value === 'TALLY' ||
-        this.currentToken.value === 'WHEN-COMPILED')
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:compiler-directing-statement
+
+  // private parseCompilerDirectingStatement(): Nodes.CompilerDirectingStatement | void {
+  //   this.expectCompilerDirectingStatement();
+
+  //   if (this.isBasisStatement()) {
+  //     //
+  //   } else {
+  //     if (this.isCblProcessStatement()) {
+  //       //
+  //     } else {
+  //       if (this.isControlCblStatement()) {
+  //         //
+  //       } else {
+  //         if (this.isCopyStatement()) {
+  //           return this.parseCopyStatement();
+  //         } else {
+  //           if (this.isDeleteCompilerDirectingStatement()) {
+  //             //
+  //           } else {
+  //             if (this.isEjectStatement()) {
+  //               return this.parseEjectStatement();
+  //             } else {
+  //               if (this.isEnterStatement()) {
+  //                 return this.parseEnterStatement();
+  //               } else {
+  //                 if (this.isInsertStatement()) {
+  //                   //
+  //                 } else {
+  //                   if (this.isReadyOrResetStatement()) {
+  //                     return this.parseReadyOrResetStatement();
+  //                   } else {
+  //                     if (this.isReplaceStatement()) {
+  //                       return this.parseReplaceStatement();
+  //                     } else {
+  //                       if (this.isServiceStatement()) {
+  //                         return this.parseServiceStatement();
+  //                       } else {
+  //                         if (this.isSkipStatement()) {
+  //                           return this.parseSkipStatement();
+  //                         } else {
+  //                           if (this.isTitleStatement()) {
+  //                             return this.parseTitleStatement();
+  //                           } else {
+  //                             if (this.isUseStatement()) {
+  //                               //
+  //                             }
+  //                           }
+  //                         }
+  //                       }
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // private isCompilerDirectingStatement(): boolean {
+  //   return (
+  //     this.isBasisStatement() ||
+  //     this.isCblProcessStatement() ||
+  //     this.isControlCblStatement() ||
+  //     this.isCopyStatement() ||
+  //     this.isDeleteCompilerDirectingStatement() ||
+  //     this.isEjectStatement() ||
+  //     this.isEnterStatement() ||
+  //     this.isInsertStatement() ||
+  //     this.isReadyOrResetStatement() ||
+  //     this.isReplaceStatement() ||
+  //     this.isServiceStatement() ||
+  //     this.isSkipStatement() ||
+  //     this.isTitleStatement() ||
+  //     this.isUseStatement()
+  //   );
+  // }
+
+  // private expectCompilerDirectingStatement(): boolean {
+  //   if (this.isCompilerDirectingStatement()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Compiler Directing Statement Statement - Got different',
+  //       new Token(undefined, TokenType.Keyword),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:basis-statement
+  // TODO
+
+  // private isBasisStatement(): boolean {
+  //   return this.isOptionalKeyword('BASIS');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:cbl-process-statement
+  // // TODO
+
+  // private isCblProcessStatement(): boolean {
+  //   return this.isOptionalKeyword('CBL') || this.isOptionalKeyword('PROCESS');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:control-cbl-statement
+  // // TODO
+
+  // private isControlCblStatement(): boolean {
+  //   return this.isOptionalKeyword('CONTROL') || this.isOptionalKeyword('CBL');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:copy-statement
+
+  // private parseCopyStatement(): Nodes.CopyStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+  //   let value: string | Nodes.Literal = '';
+  //   let libraryName: string | Nodes.Literal = '';
+  //   const replacingCopyOperand: Nodes.CopyOperand[] = [];
+  //   const byCopyOperand: Nodes.CopyOperand[] = [];
+
+  //   this.expectCopyStatement();
+  //   this.nextToken();
+
+  //   if (this.isTextName()) {
+  //     value = this.currentToken.value;
+  //     this.nextToken();
+  //   } else {
+  //     this.expectLiteral();
+  //     value = this.parseLiteral();
+  //   }
+
+  //   if (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+  //     this.nextToken();
+  //     if (this.isLibraryName()) {
+  //       libraryName = this.currentToken.value;
+  //       this.nextToken();
+  //     } else {
+  //       this.expectLiteral();
+  //       libraryName = this.parseLiteral();
+  //     }
+  //   }
+
+  //   this.skipOptionalKeyword('SUPPRESS');
+
+  //   if (this.isOptionalKeyword('REPLACING')) {
+  //     this.nextToken();
+
+  //     while (this.isCopyOperand()) {
+  //       replacingCopyOperand.push(this.parseCopyOperand());
+  //       this.expectKeyword('BY');
+  //       this.nextToken();
+  //       byCopyOperand.push(this.parseCopyOperand());
+  //     }
+  //   }
+  //   this.expectTerminator();
+  //   this.nextToken();
+
+  //   return this.finalizeNode(
+  //     new Nodes.CopyStatement(startNodeInfo, value, libraryName, replacingCopyOperand, byCopyOperand),
+  //     this.currentToken,
+  //   );
+  // }
+
+  // private isCopyStatement(): boolean {
+  //   return this.isOptionalKeyword('COPY');
+  // }
+
+  // private expectCopyStatement(): boolean {
+  //   if (this.isCopyStatement()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Copy Statement - Got different',
+  //       new Token(undefined, TokenType.Keyword),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:delete-compiler-directing-statement
+  // // TODO
+
+  // private isDeleteCompilerDirectingStatement(): boolean {
+  //   return this.isOptionalKeyword('DELETE');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:eject-statement
+
+  // private parseEjectStatement(): Nodes.EjectStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+
+  //   this.expectEjectStatement();
+  //   this.nextToken();
+  //   this.skipOptionalTerminator();
+
+  //   return this.finalizeNode(new Nodes.EjectStatement(startNodeInfo), this.currentToken);
+  // }
+
+  // private isEjectStatement(): boolean {
+  //   return this.isOptionalKeyword('EJECT');
+  // }
+
+  // private expectEjectStatement(): boolean {
+  //   if (this.isEjectStatement()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Eject Statement - Got different',
+  //       new Token(undefined, TokenType.Keyword),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:enter-statement
+
+  // private parseEnterStatement(): Nodes.EnterStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+  //   let routineName: string = '';
+
+  //   this.expectEnterStatement();
+  //   this.nextToken();
+  //   const languageName: string = this.currentToken.value;
+  //   this.nextToken();
+  //   if (this.isRoutineName()) {
+  //     routineName = this.currentToken.value;
+  //     this.nextToken();
+  //   }
+  //   this.expectTerminator();
+  //   this.nextToken();
+
+  //   return this.finalizeNode(new Nodes.EnterStatement(startNodeInfo, languageName, routineName), this.currentToken);
+  // }
+
+  // private isEnterStatement(): boolean {
+  //   return this.isOptionalKeyword('ENTER');
+  // }
+
+  // private expectEnterStatement(): boolean {
+  //   if (this.isEnterStatement()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Enter Statement - Got different',
+  //       new Token(undefined, TokenType.Keyword),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:insert-statement
+  // // TODO
+
+  // private isInsertStatement(): boolean {
+  //   return this.isOptionalKeyword('INSERT');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:ready-or-reset-trace-statement
+
+  // private parseReadyOrResetStatement(): Nodes.ReadyOrResetTraceStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+
+  //   this.expectReadyOrResetStatement();
+  //   this.nextToken();
+  //   this.expectKeyword('TRACE');
+  //   this.nextToken();
+  //   this.expectTerminator();
+  //   this.nextToken();
+
+  //   return this.finalizeNode(new Nodes.ReadyOrResetTraceStatement(startNodeInfo), this.currentToken);
+  // }
+
+  // private isReadyOrResetStatement(): boolean {
+  //   return this.isOptionalKeyword('READY') || this.isOptionalKeyword('RESET');
+  // }
+
+  // private expectReadyOrResetStatement(): boolean {
+  //   if (this.isReadyOrResetStatement()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Ready or Reset Statement - Got different',
+  //       new Token(undefined, TokenType.Keyword),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:replace-statement
+
+  // private parseReplaceStatement(): Nodes.ReplaceStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+  //   const quotedPseudoText: Nodes.QuotedPseudoText[] = [];
+  //   const byQuotedPseudoText: Nodes.QuotedPseudoText[] = [];
+
+  //   this.nextToken();
+
+  //   if (this.isOptionalKeyword('OFF')) {
+  //     this.nextToken();
+  //   } else {
+  //     this.expectQuotedPseudoText();
+  //     while (this.isQuotedPseudoText()) {
+  //       quotedPseudoText.push(this.parseQuotedPseudoText());
+  //       this.expectKeyword('BY');
+  //       this.nextToken();
+  //       byQuotedPseudoText.push(this.parseQuotedPseudoText());
+  //     }
+  //     this.expectTerminator();
+  //     this.nextToken();
+  //   }
+  //   return this.finalizeNode(
+  //     new Nodes.ReplaceStatement(startNodeInfo, quotedPseudoText, byQuotedPseudoText),
+  //     this.currentToken,
+  //   );
+  // }
+
+  // private isReplaceStatement(): boolean {
+  //   return this.isOptionalKeyword('REPLACE');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:service-reload-statement
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:service-label-statement
+
+  // private parseServiceStatement(): Nodes.ServiceStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+
+  //   this.nextToken();
+
+  //   if (this.isOptionalKeyword('LABEL')) {
+  //     this.nextToken();
+  //     return this.finalizeNode(new Nodes.ServiceLabelStatement(startNodeInfo), this.currentToken);
+  //   } else {
+  //     this.nextToken();
+  //     const identifier: Nodes.Identifier = this.parseIdentifier();
+  //     return this.finalizeNode(new Nodes.ServiceReloadStatement(startNodeInfo, identifier), this.currentToken);
+  //   }
+  // }
+
+  // private isServiceStatement(): boolean {
+  //   return this.isOptionalKeyword('SERVICE');
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:skip-statement
+
+  // private parseSkipStatement(): Nodes.SkipStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+
+  //   this.nextToken();
+  //   this.skipOptionalTerminator();
+  //   return this.finalizeNode(new Nodes.SkipStatement(startNodeInfo), this.currentToken);
+  // }
+
+  // private isSkipStatement(): boolean {
+  //   return this.isSeveralOptionalKeywords(['SKIP1', 'SKIP2', 'SKIP3']);
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:title-statement
+
+  // private parseTitleStatement(): Nodes.TitleStatement {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+
+  //   this.nextToken();
+  //   const literal: Nodes.Literal = this.parseLiteral();
+  //   this.skipOptionalTerminator();
+  //   return this.finalizeNode(new Nodes.TitleStatement(startNodeInfo, literal), this.currentToken);
+  // }
+
+  // private isTitleStatement(): boolean {
+  //   return this.isOptionalKeyword('TITLE');
+  // }
+
+  // private expectTitleStatement(): boolean {
+  //   if (this.isTitleStatement()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Title Statement - Got different',
+  //       new Token(undefined, TokenType.Keyword),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:use-statement
+
+  // private isUseStatement(): boolean {
+  //   return this.isOptionalKeyword('USE');
+  // }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:identifier
+
+  // private parseIdentifier(): Nodes.Identifier {
+  //   if (this.isOptionalKeyword('LINAGE-COUNTER')) {
+  //     return this.parseLinageCounterIdentifier();
+  //   } else {
+  //     return this.parseQualifiedIdentifier();
+  //   }
+  // }
+
+  // private parseLinageCounterIdentifier(): Nodes.LinageCounterIdentifier {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+  //   let fileName: string = '';
+  //   this.nextToken();
+  //   if (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+  //     this.nextToken();
+  //     fileName = this.currentToken.value;
+  //     this.nextToken();
+  //   }
+  //   return this.finalizeNode(new Nodes.LinageCounterIdentifier(startNodeInfo, fileName), this.currentToken);
+  // }
+
+  // private parseQualifiedIdentifier(): Nodes.QualifiedIdentifier {
+  //   const startNodeInfo = this.startNode(this.currentToken);
+  //   // const qualifiedDateName: Nodes.QualifiedDataName = this.parseQualifiedDataName();
+  //   // const subscripts: Nodes.Subscript[] = [];
+  //   // let leftMostCharacterPosition: Nodes.LeftMostCharacterPosition;
+
+  //   // while (this.isSubscript()) {
+  //   //   subscripts.push(this.parseSubscript());
+  //   // }
+
+  //   // if (this.isBracketToken()) {
+  //   //   this.nextToken();
+  //   //   leftMostCharacterPosition = this.parseLeftMostCharacterPosition();
+  //   // }
+
+  //   return this.finalizeNode(new Nodes.QualifiedIdentifier(startNodeInfo), this.currentToken);
+  // }
+
+  // private isCobolIdentifier(): boolean {
+  //   return this.isQualifiedDataName() || this.isOptionalKeyword('LINAGE-COUNTER');
+  // }
+
+  // // private expectCobolIdentifier(): boolean {
+  // //   if (this.isCobolIdentifier()) {
+  // //     return true;
+  // //   } else {
+  // //     this.errorHandler.unexpectedTokenError(
+  // //       this.currentToken,
+  // //       'Expected Identifier - Got different',
+  // //       new Token(undefined, TokenType.Identifier),
+  // //     );
+  // //     this.setCurrentNodeHasError();
+
+  // //     return false;
+  // //   }
+  // // }
+
+  // // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:literal
+
+  private parseLiteral(): Nodes.Literal {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string | Nodes.FigurativeConstant;
+
+    this.expectLiteral();
+
+    if (this.isFigurativeConstant()) {
+      value = this.parseFigurativeConstant();
+    } else {
+      value = this.currentToken.value;
+      this.nextToken();
+    }
+
+    return this.finalizeNode(new Nodes.Literal(startNodeInfo, value), this.currentToken);
+  }
+
+  private isLiteral(): boolean {
+    return this.isNumeric() || this.isNotNumeric() || this.isFigurativeConstant();
+  }
+
+  /* istanbul ignore next */
+  private expectLiteral(): boolean {
+    if (this.isLiteral()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Literal - Got different',
+        new Token(undefined, TokenType.StringLiteral),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:procedure-name
+
+  // private isProcedureName(): boolean {
+  //   return this.isParagraphName() || this.isSectionName();
+  // }
+
+  // private expectProcedureName(): boolean {
+  //   if (this.isProcedureName()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Procedure Name - Got different',
+  //       new Token(undefined, TokenType.Identifier),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:qualified-data-name
+
+  private parseQualifiedDataName(): Nodes.QualifiedDataName {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let value: string | Nodes.SpecialRegister = '';
+    const dataNames: string[] = [];
+
+    this.expectQualifiedDataName();
+
+    if (this.isSpecialRegister()) {
+      value = this.parseSpecialRegister();
+    } else {
+      if (this.expectDataName()) {
+        value = this.currentToken.value;
+      }
+      this.nextToken();
+
+      while (this.isSeveralOptionalKeywords(['IN', 'OF'])) {
+        this.skipOptionalKeywords(['IN', 'OF']);
+        dataNames.push(this.currentToken.value);
+        this.nextToken();
+      }
+    }
+
+    return this.finalizeNode(new Nodes.QualifiedDataName(startNodeInfo, value, dataNames), this.currentToken);
+  }
+
+  private isQualifiedDataName(): boolean {
+    return this.isDataName() || this.isSpecialRegister();
+  }
+
+  /* istanbul ignore next */
+  private expectQualifiedDataName(): boolean {
+    if (this.isQualifiedDataName()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Qualified Data Name - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:copy-operand
+
+  //   private parseCopyOperand(): Nodes.CopyOperand {
+  //     const startNodeInfo = this.startNode(this.currentToken);
+  //     let value: string | Nodes.QuotedPseudoText | Nodes.Identifier | Nodes.Literal = '';
+
+  //     if (this.isQuotedPseudoText()) {
+  //       value = this.parseQuotedPseudoText();
+  //     } else {
+  //       if (this.isCobolIdentifier()) {
+  //         value = this.parseIdentifier();
+  //       } else {
+  //         if (this.isLiteral()) {
+  //           value = this.parseLiteral();
+  //         } else {
+  //           value = this.currentToken.value;
+  //           this.nextToken();
+  //         }
+  //       }
+  //     }
+
+  //     return this.finalizeNode(new Nodes.CopyOperand(startNodeInfo, value), this.currentToken);
+  //   }
+
+  //   private isCopyOperand(): boolean {
+  //     return this.isQuotedPseudoText() || this.isCobolIdentifier() || this.isLiteral() || this.isCobolWord();
+  //   }
+
+  //   private expectCopyOperand(): boolean {
+  //     if (this.isCopyOperand()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Copy Operand - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:cobol-word
+
+  private parseCobolWord(): string {
+    return this.currentToken.value;
+  }
+
+  private isCobolWord(): boolean {
+    return this.currentToken.type === TokenType.Identifier;
+  }
+
+  // private expectCobolWord(): boolean {
+  //   if (this.isCobolWord()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Cobol Word - Got different',
+  //       new Token(undefined, TokenType.Identifier),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:user-defined-word
+
+  //   private isUserDefinedWord(): boolean {
+  //     return this.isCobolWord();
+  //   }
+
+  //   private expectUserDefinedWord(): boolean {
+  //     if (this.isUserDefinedWord()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected User Defined Word - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:alphabet-name
+
+  //   private isAlphabetName(): boolean {
+  //     return this.isAlphabeticUserDefinedWord();
+  //   }
+
+  //   private expectAlphabetName(): boolean {
+  //     if (this.isAlphabetName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected alphabet Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:class-name
+
+  //   private isClassName(): boolean {
+  //     return this.isAlphabeticUserDefinedWord();
+  //   }
+
+  //   private expectClassName(): boolean {
+  //     if (this.isClassName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Class Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:condition-name
+
+  private parseConditionName(): string {
+    this.expectConditionName();
+    const value: string = this.currentToken.value;
+    this.nextToken();
+    return value;
+  }
+
+  private isConditionName(): boolean {
+    return this.isAlphabeticUserDefinedWord();
+  }
+
+  /* istanbul ignore next */
+  private expectConditionName(): boolean {
+    if (this.isConditionName()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Condition Name - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:data-name
+
+  private parseDataName(): string {
+    this.expectDataName();
+    const value: string = this.currentToken.value;
+    this.nextToken();
+    return value;
+  }
+
+  private isDataName(): boolean {
+    return this.isAlphabeticUserDefinedWord();
+  }
+
+  /* istanbul ignore next */
+  private expectDataName(): boolean {
+    if (this.isDataName()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Data Name - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:file-name
+
+  private parseFileName(): string {
+    let value: string = '';
+    if (this.expectFileName()) {
+      value = this.getAlphabeticUserDefinedWord();
+      this.nextToken();
+    }
+    return value;
+  }
+
+  private isFileName(): boolean {
+    return this.isAlphabeticUserDefinedWord();
+  }
+
+  /* istanbul ignore next */
+  private expectFileName(): boolean {
+    if (this.isFileName()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected File Name - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:index-name
+
+  private parseIndexName(): string {
+    this.expectIndexName();
+    const value: string = this.currentToken.value;
+    this.nextToken();
+    return value;
+  }
+
+  private isIndexName(): boolean {
+    return this.isAlphabeticUserDefinedWord();
+  }
+
+  /* istanbul ignore next */
+  private expectIndexName(): boolean {
+    if (this.isIndexName()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Index Name - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:mnemonic-name
+
+  //   private isMnemonicName(): boolean {
+  //     return this.isAlphabeticUserDefinedWord();
+  //   }
+
+  //   private expectMnemonicName(): boolean {
+  //     if (this.isMnemonicName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Mnemonic Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:record-name
+
+  //   private isRecordName(): boolean {
+  //     return this.isQualifiedDataName();
+  //   }
+
+  //   private expectRecordName(): boolean {
+  //     if (this.isRecordName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Record Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:routine-name
+
+  //   private isRoutineName(): boolean {
+  //     return this.isAlphabeticUserDefinedWord();
+  //   }
+
+  //   private expectRoutineName(): boolean {
+  //     if (this.isRoutineName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Routine Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:symbolic-character
+
+  //   private isSymbolicCharacter(): boolean {
+  //     return this.isAlphabeticUserDefinedWord();
+  //   }
+
+  //   private expectSymbolicCharacter(): boolean {
+  //     if (this.isSymbolicCharacter()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Symbolic Character - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:library-name
+
+  //   private isLibraryName(): boolean {
+  //     return this.isUserDefinedWord();
+  //   }
+
+  //   private expectLibraryName(): boolean {
+  //     if (this.isLibraryName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Library Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:text-name
+
+  //   private isTextName(): boolean {
+  //     return this.isUserDefinedWord();
+  //   }
+
+  //   private expectTextName(): boolean {
+  //     if (this.isTextName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Text Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:paragraph-name
+
+  //   private isParagraphName(): boolean {
+  //     return this.isUserDefinedWord();
+  //   }
+
+  //   private expectParagraphName(): boolean {
+  //     if (this.isParagraphName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Paragraph Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:section-name
+
+  //   private isSectionName(): boolean {
+  //     return this.isUserDefinedWord();
+  //   }
+
+  //   private expectSectionName(): boolean {
+  //     if (this.isSectionName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Section Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:computer-name
+
+  //   private parseComputerName(): string {
+  //     if (this.expectComputerName()) {
+  //       return this.parseSystemName();
+  //     } else {
+  //       return '';
+  //     }
+  //   }
+
+  //   private isComputerName(): boolean {
+  //     return this.isSystemName();
+  //   }
+
+  //   private expectComputerName(): boolean {
+  //     if (this.isComputerName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Computer Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:language-name
+
+  //   private parseLanguageName(): string {
+  //     if (this.expectLanguageName()) {
+  //       return this.parseSystemName();
+  //     } else {
+  //       return '';
+  //     }
+  //   }
+
+  //   private isLanguageName(): boolean {
+  //     return this.isSystemName();
+  //   }
+
+  //   private expectLanguageName(): boolean {
+  //     if (this.isLanguageName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Language Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:environment-name
+
+  //   private parseEnvironmentName(): string {
+  //     if (this.expectEnvironmentName()) {
+  //       return this.parseSystemName();
+  //     } else {
+  //       return '';
+  //     }
+  //   }
+
+  //   private isEnvironmentName(): boolean {
+  //     return this.isSystemName();
+  //   }
+
+  //   private expectEnvironmentName(): boolean {
+  //     if (this.isEnvironmentName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Environment Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:assignment-name
+
+  //   private parseAssignmentName(): string {
+  //     if (this.expectAssignmentName()) {
+  //       return this.parseSystemName();
+  //     } else {
+  //       return '';
+  //     }
+  //   }
+
+  //   private isAssignmentName(): boolean {
+  //     return this.isSystemName();
+  //   }
+
+  //   private expectAssignmentName(): boolean {
+  //     if (this.isAssignmentName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Assignment Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:basis-name
+
+  //   private isBasisName(): boolean {
+  //     return this.isProgramName();
+  //   }
+
+  //   private expectBasisName(): boolean {
+  //     if (this.isBasisName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Basis Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:program-name
+
+  //   private isProgramName(): boolean {
+  //     return this.isUserDefinedWord();
+  //   }
+
+  //   private expectProgramName(): boolean {
+  //     if (this.isProgramName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Program Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:alphabetic-user-defined-word
+
+  private getAlphabeticUserDefinedWord(): string {
+    return this.parseCobolWord();
+  }
+
+  private isAlphabeticUserDefinedWord(): boolean {
+    return this.isCobolWord() && /[a-zA-Z]/.test(this.currentToken.value);
+  }
+
+  // private expectAlphabeticUserDefinedWord(): boolean {
+  //   if (this.isAlphabeticUserDefinedWord()) {
+  //     return true;
+  //   } else {
+  //     this.errorHandler.unexpectedTokenError(
+  //       this.currentToken,
+  //       'Expected Alphabetic User Defined Word - Got different',
+  //       new Token(undefined, TokenType.Identifier),
+  //     );
+  //     this.setCurrentNodeHasError();
+
+  //     return false;
+  //   }
+  // }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:quoted-pseudo-text
+
+  //   private isQuotedPseudoText(): boolean {
+  //     return (
+  //       this.currentToken.type === TokenType.Operator &&
+  //       this.currentToken.value === '==' &&
+  //       this.tokens[this.index + 1].type === TokenType.Identifier &&
+  //       this.tokens[this.index + 2].type === TokenType.Operator &&
+  //       this.tokens[this.index + 2].value === '=='
+  //     );
+  //   }
+
+  //   private expectQuotedPseudoText(): boolean {
+  //     if (this.isQuotedPseudoText()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected Quoted Pseudo Text - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   private parseQuotedPseudoText(): Nodes.QuotedPseudoText {
+  //     const startNodeInfo = this.startNode(this.currentToken);
+  //     let value: string = '';
+  //     if (this.currentToken.type === TokenType.Operator) {
+  //       value = value.concat(this.currentToken.value);
+  //     }
+  //     this.nextToken();
+  //     if (this.currentToken.type === TokenType.Identifier) {
+  //       value = value.concat(this.currentToken.value);
+  //     }
+  //     this.nextToken();
+  //     if (this.currentToken.type === TokenType.Operator) {
+  //       value = value.concat(this.currentToken.value);
+  //     }
+  //     this.nextToken();
+
+  //     return this.finalizeNode(new Nodes.QuotedPseudoText(startNodeInfo, value), this.currentToken);
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:system-name
+
+  //   private parseSystemName(): string {
+  //     if (this.expectSystemName()) {
+  //       return this.parseCobolWord();
+  //     } else {
+  //       return '';
+  //     }
+  //   }
+
+  //   private isSystemName(): boolean {
+  //     return this.isCobolWord();
+  //   }
+
+  //   private expectSystemName(): boolean {
+  //     if (this.isSystemName()) {
+  //       return true;
+  //     } else {
+  //       this.errorHandler.unexpectedTokenError(
+  //         this.currentToken,
+  //         'Expected System Name - Got different',
+  //         new Token(undefined, TokenType.Identifier),
+  //       );
+  //       this.setCurrentNodeHasError();
+
+  //       return false;
+  //     }
+  //   }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:figurative-constant
+
+  private parseFigurativeConstant(): Nodes.FigurativeConstant {
+    const startNodeInfo = this.startNode(this.currentToken);
+    let optionalValue: Nodes.Literal | null = null;
+
+    this.expectFigurativeConstant();
+
+    const figurativeConstantType: string = this.currentToken.value;
+    this.nextToken();
+
+    if (figurativeConstantType === 'ALL') {
+      this.expectLiteral();
+      optionalValue = this.parseLiteral();
+    }
+
+    return this.finalizeNode(
+      new Nodes.FigurativeConstant(startNodeInfo, figurativeConstantType, optionalValue),
+      this.currentToken,
     );
   }
 
+  private isFigurativeConstant(): boolean {
+    return (
+      this.currentToken.type === TokenType.Keyword &&
+      (this.currentToken.value === 'ZERO' ||
+        this.currentToken.value === 'ZEROS' ||
+        this.currentToken.value === 'ZEROES' ||
+        this.currentToken.value === 'SPACE' ||
+        this.currentToken.value === 'SPACES' ||
+        this.currentToken.value === 'HIGH-VALUE' ||
+        this.currentToken.value === 'HIGH-VALUES' ||
+        this.currentToken.value === 'LOW-VALUE' ||
+        this.currentToken.value === 'LOW-VALUES' ||
+        this.currentToken.value === 'QUOTE' ||
+        this.currentToken.value === 'QUOTES' ||
+        this.currentToken.value === 'ALL' ||
+        this.currentToken.value === 'NULL' ||
+        this.currentToken.value === 'NULLS')
+    );
+  }
+
+  /* istanbul ignore next */
+  private expectFigurativeConstant(): boolean {
+    if (this.isFigurativeConstant()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Figurative Constant - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:level-number
+
+  private parseLevelNumber(): Nodes.LevelNumber {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectLevelNumber();
+
+    const value: string = this.currentToken.value;
+    this.nextToken();
+
+    return this.finalizeNode(new Nodes.LevelNumber(startNodeInfo, value), this.currentToken);
+  }
+
+  private isLevelNumber(): boolean {
+    const num: number = parseInt(this.currentToken.value, 10);
+    if ((num >= 1 && num <= 49) || num === 66 || num === 77 || num === 88) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /* istanbul ignore next */
+  private expectLevelNumber(): boolean {
+    if (this.isLevelNumber()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected Level Number - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:data-description-entry
+
+  private parseDataDescriptionEntry(): Nodes.DataDescriptionEntry {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    const level: Nodes.LevelNumber = this.parseLevelNumber();
+
+    if (level.value === '66') {
+      const dataName: string = this.parseDataName();
+      const renamesClause: Nodes.RenamesClause[] = [];
+      renamesClause.push(this.parseRenamesClause());
+
+      this.skipMandatoryTerminator();
+      return this.finalizeNode(
+        new Nodes.DataDescriptionEntry(startNodeInfo, level, dataName, renamesClause),
+        this.currentToken,
+      );
+    } else {
+      if (level.value === '88') {
+        const conditionName: string = this.parseConditionName();
+        const conditionValueClause: Nodes.ConditionValueClause[] = [];
+        conditionValueClause.push(this.parseConditionValueClause());
+        this.skipMandatoryTerminator();
+        return this.finalizeNode(
+          new Nodes.DataDescriptionEntry(startNodeInfo, level, conditionName, conditionValueClause),
+          this.currentToken,
+        );
+      } else {
+        let dataName: string = '';
+        if (this.isDataName()) {
+          dataName = this.parseDataName();
+        } else {
+          this.expectKeyword('FILLER');
+          dataName = this.currentToken.value;
+          this.nextToken();
+        }
+        const dataDescriptionEntryClauses: Nodes.DataDescriptionEntryClause[] = [];
+        while (this.isDataDescriptionEntryClause()) {
+          dataDescriptionEntryClauses.push(this.parseDataDescriptionEntryClause());
+        }
+        this.skipMandatoryTerminator();
+
+        return this.finalizeNode(
+          new Nodes.DataDescriptionEntry(startNodeInfo, level, dataName, dataDescriptionEntryClauses),
+          this.currentToken,
+        );
+      }
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:data-description-entry-clauses
+
+  private parseDataDescriptionEntryClause(): Nodes.DataDescriptionEntryClause {
+    this.expectDataDescriptionEntryClause();
+
+    if (this.isRedefinesClause()) {
+      return this.parseRedefinesClause();
+    }
+    if (this.isBlankWhenZeroClause()) {
+      return this.parseBlankWhenZeroClause();
+    }
+    if (this.isExternalOrGlobalClause()) {
+      return this.parseExternalOrGlobalClause();
+    }
+    if (this.isJustifiedClause()) {
+      return this.parseJustifiedClause();
+    }
+    if (this.isOccursClause()) {
+      return this.parseOccursClause();
+    }
+    if (this.isPictureClause()) {
+      return this.parsePictureClause();
+    }
+    if (this.isSignClause()) {
+      return this.parseSignClause();
+    }
+    if (this.isSyncronizedClause()) {
+      return this.parseSyncronizedClause();
+    }
+    if (this.isUsageClause()) {
+      return this.parseUsageClause();
+    }
+
+    return this.parseDataValueClause();
+  }
+
+  private isDataDescriptionEntryClause(): boolean {
+    return (
+      this.isRedefinesClause() ||
+      this.isBlankWhenZeroClause() ||
+      this.isExternalOrGlobalClause() ||
+      this.isJustifiedClause() ||
+      this.isOccursClause() ||
+      this.isPictureClause() ||
+      this.isSignClause() ||
+      this.isSyncronizedClause() ||
+      this.isUsageClause() ||
+      this.isDataValueClause()
+    );
+  }
+
+  /* istanbul ignore next */
+  private expectDataDescriptionEntryClause(): boolean {
+    if (this.isDataDescriptionEntryClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected DataDescriptionEntryClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:redefines-clause
+
+  private parseRedefinesClause(): Nodes.RedefinesClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectRedefinesClause();
+    this.skipOptionalKeyword('REDEFINES');
+
+    const dataName: string = this.parseDataName();
+
+    return this.finalizeNode(new Nodes.RedefinesClause(startNodeInfo, dataName), this.currentToken);
+  }
+
+  private isRedefinesClause(): boolean {
+    return this.isOptionalKeyword('REDEFINES');
+  }
+
+  /* istanbul ignore next */
+  private expectRedefinesClause(): boolean {
+    if (this.isRedefinesClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected RedefinesClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:blank-when-zero-clause
+
+  private parseBlankWhenZeroClause(): Nodes.BlankWhenZeroClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectBlankWhenZeroClause();
+    this.skipOptionalKeyword('BLANK');
+    this.skipOptionalKeyword('WHEN');
+    this.skipOptionalKeywords(['ZERO', 'ZEROS', 'ZEROES']);
+
+    return this.finalizeNode(new Nodes.BlankWhenZeroClause(startNodeInfo), this.currentToken);
+  }
+
+  private isBlankWhenZeroClause(): boolean {
+    return this.isOptionalKeyword('BLANK');
+  }
+
+  /* istanbul ignore next */
+  private expectBlankWhenZeroClause(): boolean {
+    if (this.isBlankWhenZeroClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected BlankWhenZeroClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:external-clause
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:global-clause
+
+  private parseExternalOrGlobalClause(): Nodes.ExternalClause | Nodes.GlobalClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectExternalOrGlobalClause();
+
+    this.skipOptionalKeyword('IS');
+    if (this.isOptionalKeyword('EXTERNAL')) {
+      this.skipOptionalKeyword('EXTERNAL');
+      return this.finalizeNode(new Nodes.ExternalClause(startNodeInfo), this.currentToken);
+    } else {
+      this.skipOptionalKeyword('GLOBAL');
+      return this.finalizeNode(new Nodes.GlobalClause(startNodeInfo), this.currentToken);
+    }
+  }
+
+  private isExternalOrGlobalClause(): boolean {
+    return this.isSeveralOptionalKeywords(['IS', 'EXTERNAL', 'GLOBAL']);
+  }
+
+  /* istanbul ignore next */
+  private expectExternalOrGlobalClause(): boolean {
+    if (this.isExternalOrGlobalClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected ExternalClause or GlobalClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:justified-clause
+
+  private parseJustifiedClause(): Nodes.JustifiedClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectJustifiedClause();
+    this.skipOptionalKeywords(['JUSTIFIED', 'JUST']);
+    this.skipOptionalKeyword('RIGHT');
+
+    return this.finalizeNode(new Nodes.JustifiedClause(startNodeInfo), this.currentToken);
+  }
+
+  private isJustifiedClause(): boolean {
+    return this.isSeveralOptionalKeywords(['JUSTIFIED', 'JUST']);
+  }
+
+  /* istanbul ignore next */
+  private expectJustifiedClause(): boolean {
+    if (this.isJustifiedClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected JustifiedClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:occurs-clause
+
+  private parseOccursClause(): Nodes.OccursClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectOccursClause();
+    this.skipOptionalKeyword('OCCURS');
+
+    const occursValue: string = this.currentToken.value;
+    this.nextToken();
+
+    let occursToValue: string = '';
+    if (this.isOptionalKeyword('TO')) {
+      this.skipOptionalKeyword('TO');
+      occursToValue = this.currentToken.value;
+      this.nextToken();
+    }
+
+    this.skipOptionalKeyword('TIMES');
+
+    let dependingOnQualifiedDataName: Nodes.QualifiedDataName | null = null;
+    if (this.isOptionalKeyword('DEPENDING')) {
+      this.skipOptionalKeyword('DEPENDING');
+      this.skipOptionalKeyword('ON');
+      dependingOnQualifiedDataName = this.parseQualifiedDataName();
+    }
+
+    const occursKeys: Nodes.OccursKey[] = [];
+    while (this.isSeveralOptionalKeywords(['ASCENDING', 'DESCENDING'])) {
+      const orderType: string = this.currentToken.value;
+      this.nextToken();
+      this.skipOptionalKeyword('KEY');
+      this.skipOptionalKeyword('IS');
+
+      const keys: Nodes.QualifiedDataName[] = [];
+      while (this.isQualifiedDataName()) {
+        keys.push(this.parseQualifiedDataName());
+      }
+      occursKeys.push({ orderType: orderType, keys: keys });
+    }
+
+    const indexNames: string[] = [];
+    if (this.isOptionalKeyword('INDEXED')) {
+      this.skipOptionalKeyword('INDEXED');
+      this.skipOptionalKeyword('BY');
+
+      while (this.isIndexName()) {
+        indexNames.push(this.parseIndexName());
+      }
+    }
+
+    return this.finalizeNode(
+      new Nodes.OccursClause(
+        startNodeInfo,
+        occursValue,
+        occursToValue,
+        dependingOnQualifiedDataName,
+        occursKeys,
+        indexNames,
+      ),
+      this.currentToken,
+    );
+  }
+
+  private isOccursClause(): boolean {
+    return this.isOptionalKeyword('OCCURS');
+  }
+
+  /* istanbul ignore next */
+  private expectOccursClause(): boolean {
+    if (this.isOccursClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected OccursClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:picture-clause
+
+  private parsePictureClause(): Nodes.PictureClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectPictureClause();
+
+    this.skipOptionalKeywords(['PICTURE', 'PIC']);
+    this.skipOptionalKeyword('IS');
+
+    const pictureString: Nodes.PictureString = this.parsePictureString();
+
+    return this.finalizeNode(new Nodes.PictureClause(startNodeInfo, pictureString), this.currentToken);
+  }
+
+  // TODO - Parsing
+  private parsePictureString(): Nodes.PictureString {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    const currency: string = '';
+    const picChar: string[] = [];
+    const value: string[] = [];
+    const punctuation: string[] = [];
+
+    picChar.push(this.currentToken.value);
+    this.nextToken();
+
+    return this.finalizeNode(
+      new Nodes.PictureString(startNodeInfo, currency, picChar, value, punctuation),
+      this.currentToken,
+    );
+  }
+
+  private isPictureClause(): boolean {
+    return this.isSeveralOptionalKeywords(['PICTURE', 'PIC']);
+  }
+
+  /* istanbul ignore next */
+  private expectPictureClause(): boolean {
+    if (this.isPictureClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected PictureClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:sign-clause
+
+  private parseSignClause(): Nodes.SignClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectSignClause();
+
+    this.skipOptionalKeyword('SIGN');
+    this.skipOptionalKeyword('IS');
+
+    let value: string = '';
+    if (this.expectSeveralKeywords(['LEADING', 'TRAILING'])) {
+      value = this.currentToken.value;
+      this.nextToken();
+    }
+
+    this.skipOptionalKeyword('SEPARATE');
+    this.skipOptionalKeyword('CHARACTER');
+
+    return this.finalizeNode(new Nodes.SignClause(startNodeInfo, value), this.currentToken);
+  }
+
+  private isSignClause(): boolean {
+    return this.isSeveralOptionalKeywords(['SIGN', 'LEADING', 'TRAILING']);
+  }
+
+  /* istanbul ignore next */
+  private expectSignClause(): boolean {
+    if (this.isSignClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected SignClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:synchronized-clause
+
+  private parseSyncronizedClause(): Nodes.SyncronizedClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    this.expectSyncronizedClause();
+
+    this.skipOptionalKeywords(['SYNCHRONIZED', 'SYNC']);
+
+    let value: string = '';
+    if (this.isSeveralOptionalKeywords(['LEFT', 'RIGHT'])) {
+      value = this.currentToken.value;
+      this.nextToken();
+    }
+
+    return this.finalizeNode(new Nodes.SyncronizedClause(startNodeInfo, value), this.currentToken);
+  }
+
+  private isSyncronizedClause(): boolean {
+    return this.isSeveralOptionalKeywords(['SYNCHRONIZED', 'SYNC']);
+  }
+
+  /* istanbul ignore next */
+  private expectSyncronizedClause(): boolean {
+    if (this.isSyncronizedClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected SyncronizedClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:usage-clause
+
+  private parseUsageClause(): Nodes.UsageClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    this.expectUsageClause();
+
+    this.skipOptionalKeyword('USAGE');
+    this.skipOptionalKeyword('IS');
+
+    const value: string = this.currentToken.value;
+    this.nextToken();
+
+    return this.finalizeNode(new Nodes.UsageClause(startNodeInfo, value), this.currentToken);
+  }
+
+  private isUsageClause(): boolean {
+    return this.isSeveralOptionalKeywords([
+      'USAGE',
+      'BINARY',
+      'COMP',
+      'COMP-1',
+      'COMP-2',
+      'COMP-3',
+      'COMP-4',
+      'COMPUTATIONAL',
+      'COMPUTATIONAL-1',
+      'COMPUTATIONAL-2',
+      'COMPUTATIONAL-3',
+      'COMPUTATIONAL-4',
+      'DISPLAY',
+      'DISPLAY-1',
+      'INDEX',
+      'PACKED-DECIMAL',
+      'POINTER',
+    ]);
+  }
+
+  /* istanbul ignore next */
+  private expectUsageClause(): boolean {
+    if (this.isUsageClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected UsageClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:renames-clause
+
+  private parseRenamesClause(): Nodes.RenamesClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    this.expectRenamesClause();
+
+    this.skipOptionalKeyword('RENAMES');
+    const renamesQualifiedDataName: Nodes.QualifiedDataName = this.parseQualifiedDataName();
+    let throughQualifiedDataName: Nodes.QualifiedDataName | null = null;
+    if (this.isSeveralOptionalKeywords(['THROUGH', 'THRU'])) {
+      this.skipOptionalKeywords(['THROUGH', 'THRU']);
+      throughQualifiedDataName = this.parseQualifiedDataName();
+    }
+
+    return this.finalizeNode(
+      new Nodes.RenamesClause(startNodeInfo, renamesQualifiedDataName, throughQualifiedDataName),
+      this.currentToken,
+    );
+  }
+
+  private isRenamesClause(): boolean {
+    return this.isOptionalKeyword('RENAMES');
+  }
+
+  /* istanbul ignore next */
+  private expectRenamesClause(): boolean {
+    if (this.isRenamesClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected RenamesClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:condition-value-clause
+
+  private parseConditionValueClause(): Nodes.ConditionValueClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+    const literals: Nodes.Literal[] = [];
+    const throughLiterals: Nodes.Literal[] = [];
+
+    this.expectConditionValueClause();
+    this.nextToken();
+    this.skipOptionalKeywords(['IS', 'ARE']);
+    while (this.isLiteral()) {
+      literals.push(this.parseLiteral());
+
+      if (this.isSeveralOptionalKeywords(['THRU', 'THROUGH'])) {
+        this.skipOptionalKeywords(['THRU', 'THROUGH']);
+        throughLiterals.push(this.parseLiteral());
+      }
+    }
+
+    return this.finalizeNode(
+      new Nodes.ConditionValueClause(startNodeInfo, literals, throughLiterals),
+      this.currentToken,
+    );
+  }
+
+  private isConditionValueClause(): boolean {
+    return this.isSeveralOptionalKeywords(['VALUE', 'VALUES']);
+  }
+
+  /* istanbul ignore next */
+  private expectConditionValueClause(): boolean {
+    if (this.isConditionValueClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected ConditionValueClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:data-value-clause
+
+  private parseDataValueClause(): Nodes.DataValueClause {
+    const startNodeInfo = this.startNode(this.currentToken);
+
+    this.expectDataValueClause();
+    this.nextToken();
+    this.skipOptionalKeyword('IS');
+    const value: Nodes.Literal = this.parseLiteral();
+
+    return this.finalizeNode(new Nodes.DataValueClause(startNodeInfo, value), this.currentToken);
+  }
+
+  private isDataValueClause(): boolean {
+    return this.isOptionalKeyword('VALUE');
+  }
+
+  /* istanbul ignore next */
+  private expectDataValueClause(): boolean {
+    if (this.isDataValueClause()) {
+      return true;
+    } else {
+      this.errorHandler.unexpectedTokenError(
+        this.currentToken,
+        'Expected DataValueClause - Got different',
+        new Token(undefined, TokenType.Identifier),
+      );
+      this.setCurrentNodeHasError();
+
+      return false;
+    }
+  }
+
+  // --------------------
+  // TOKEN
+  // ----------------------------
   private expectIdentifier(): boolean {
     if (this.currentToken.type !== TokenType.Identifier) {
       this.errorHandler.unexpectedTokenError(
@@ -1284,11 +3212,46 @@ export class Parser {
     }
   }
 
+  private skipMandatoryTerminator() {
+    this.expectTerminator();
+    this.nextToken();
+  }
+
   private isOptionalIdentifier() {
     return this.currentToken.type === TokenType.Identifier;
   }
 
   private isOptionalNumeric() {
     return this.currentToken.type === TokenType.NumericLiteral;
+  }
+
+  //   // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:comment-entry
+
+  private parseCommentEntry(): string {
+    let value: string = '';
+
+    if (this.expectIdentifier()) {
+      value = value.concat(this.currentToken.value);
+      this.nextToken();
+      while (this.currentToken.type === TokenType.Identifier) {
+        value = value.concat(' ', this.currentToken.value);
+        this.nextToken();
+      }
+      this.skipOptionalTerminator();
+    } else {
+      this.nextToken();
+    }
+
+    return value;
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:numeric
+  private isNumeric() {
+    return this.currentToken.type === TokenType.NumericLiteral;
+  }
+
+  // https://www.cs.vu.nl/grammarware/vs-cobol-ii/#gdef:nonnumeric
+  private isNotNumeric() {
+    return this.currentToken.type === TokenType.StringLiteral;
   }
 }

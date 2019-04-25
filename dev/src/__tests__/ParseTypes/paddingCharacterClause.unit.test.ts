@@ -9,9 +9,9 @@ test('Standard statement', () => {
   });
   expect(ast.nodes[0].type).toBe(Syntax.PaddingCharacterClause);
   expect(ast.errors.length).toBe(0);
-  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).paddingCaracterValue).toBe('LITERAL');
-  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).dataNames[0]).toBe('FILE1');
-  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).dataNames[1]).toBe('FILE2');
+  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).qualifiedDataName.value).toBe('LITERAL');
+  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).qualifiedDataName.dataNames[0]).toBe('FILE1');
+  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).qualifiedDataName.dataNames[1]).toBe('FILE2');
 });
 
 test('Minimum statement', () => {
@@ -20,7 +20,7 @@ test('Minimum statement', () => {
   });
   expect(ast.nodes[0].type).toBe(Syntax.PaddingCharacterClause);
   expect(ast.errors.length).toBe(0);
-  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).paddingCaracterValue).toBe('LITERAL');
+  expect((ast.nodes[0] as Nodes.PaddingCharacterClause).qualifiedDataName.value).toBe('LITERAL');
 });
 
 test('Error statement', () => {
@@ -28,7 +28,7 @@ test('Error statement', () => {
     fromPath: false,
   });
   expect(ast.nodes[0].type).toBe(Syntax.PaddingCharacterClause);
-  expect(ast.errors.length).toBe(1);
+  expect(ast.errors.length).toBeGreaterThan(0);
 });
 
 test('SpecialRegister statement', () => {
@@ -38,6 +38,7 @@ test('SpecialRegister statement', () => {
   expect(ast.nodes[0].type).toBe(Syntax.PaddingCharacterClause);
   expect(ast.errors.length).toBe(0);
   expect(
-    ((ast.nodes[0] as Nodes.PaddingCharacterClause).paddingCaracterValue as Nodes.SpecialRegister).specialRegisterType,
+    ((ast.nodes[0] as Nodes.PaddingCharacterClause).qualifiedDataName.value as Nodes.SpecialRegister)
+      .specialRegisterType,
   ).toBe('WHEN-COMPILED');
 });

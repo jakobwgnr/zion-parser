@@ -52,14 +52,6 @@ export abstract class Node {
             hasError: ${this.hasError}
             \r\n`;
   };
-
-  public getStandardInfo(): NodeStandardInfo {
-    return {
-      startColumnTotal: this.startColumnTotal,
-      startColumnRelative: this.startColumnRelative,
-      startLine: this.startLine,
-    };
-  }
 }
 
 export class CobolSourceProgram extends Node {
@@ -236,16 +228,23 @@ export class InputOutputSection extends Node {
 }
 
 export class FileControlParagraph extends Node {
-  constructor(info: NodeStandardInfo) {
+  readonly fileControlEntries: FileControlEntry[];
+  constructor(info: NodeStandardInfo, fileControlEntries: FileControlEntry[]) {
     super(info);
     this.type = Syntax.FileControlParagraph;
+    this.fileControlEntries = fileControlEntries;
   }
 }
 
 export class FileControlEntry extends Node {
-  constructor(info: NodeStandardInfo) {
+  readonly selectClause: SelectClause | null;
+  readonly assignClause: AssignClause | null;
+
+  constructor(info: NodeStandardInfo, selectClause: SelectClause | null, assignClause: AssignClause | null) {
     super(info);
     this.type = Syntax.FileControlEntry;
+    this.selectClause = selectClause;
+    this.assignClause = assignClause;
   }
 }
 
@@ -277,13 +276,11 @@ export class ReserveClause extends Node {
 }
 
 export class PaddingCharacterClause extends Node {
-  paddingCaracterValue: string | SpecialRegister = '';
-  dataNames: string[] = [];
-  constructor(info: NodeStandardInfo, paddingCaracterValue: string | SpecialRegister, dataNames: string[]) {
+  qualifiedDataName: QualifiedDataName;
+  constructor(info: NodeStandardInfo, qualifiedDataName: QualifiedDataName) {
     super(info);
     this.type = Syntax.PaddingCharacterClause;
-    this.paddingCaracterValue = paddingCaracterValue;
-    this.dataNames = dataNames;
+    this.qualifiedDataName = qualifiedDataName;
   }
 }
 
@@ -372,6 +369,26 @@ export class SpecialRegister extends Node {
   }
 }
 
+export class FigurativeConstant extends Node {
+  figurativeConstantType: string = '';
+  optionalValue: Literal | null;
+  constructor(info: NodeStandardInfo, figurativeConstantType: string, optionalValue: Literal | null) {
+    super(info);
+    this.type = Syntax.FigurativeConstant;
+    this.figurativeConstantType = figurativeConstantType;
+    this.optionalValue = optionalValue;
+  }
+}
+
+export class QuotedPseudoText extends Node {
+  value: string = '';
+  constructor(info: NodeStandardInfo, value: string) {
+    super(info);
+    this.type = Syntax.QuotedPseudoText;
+    this.value = value;
+  }
+}
+
 export class IOControlParagraph extends Node {
   constructor(info: NodeStandardInfo) {
     super(info);
@@ -403,9 +420,9 @@ export type SpecialNamesParagraphClause =
 export class AlphabetClause extends Node {
   readonly alphabetName: string = '';
   readonly alphabetType: string = '';
-  readonly alphabetLiterals: Literal[] = [];
+  readonly alphabetLiterals: AlphabetLiteral[] = [];
 
-  constructor(info: NodeStandardInfo, alphabetName: string, alphabetType: string, alphabetLiterals: Literal[]) {
+  constructor(info: NodeStandardInfo, alphabetName: string, alphabetType: string, alphabetLiterals: AlphabetLiteral[]) {
     super(info);
     this.alphabetName = alphabetName;
     this.alphabetType = alphabetType;
@@ -433,9 +450,9 @@ export class SymbolicCharactersClause extends Node {
 }
 export class ClassClause extends Node {
   readonly className: string = '';
-  readonly classLiterals: Literal[] = [];
+  readonly classLiterals: AlphabetLiteral[] = [];
 
-  constructor(info: NodeStandardInfo, className: string, classLiterals: Literal[]) {
+  constructor(info: NodeStandardInfo, className: string, classLiterals: AlphabetLiteral[]) {
     super(info);
     this.className = className;
     this.classLiterals = classLiterals;
@@ -460,7 +477,379 @@ export class DecimalPointClause extends Node {
   }
 }
 
-export class Literal {
+export class Literal extends Node {
+  readonly value: number | string | FigurativeConstant;
+  constructor(info: NodeStandardInfo, value: number | string | FigurativeConstant) {
+    super(info);
+    this.type = Syntax.Literal;
+    this.value = value;
+  }
+}
+
+export class BasisStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.BasisStatement;
+  }
+}
+
+export class CblProcessStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.CblProcessStatement;
+  }
+}
+
+export class ControlCblStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.ControlCblStatement;
+  }
+}
+
+export class CopyStatement extends Node {
+  readonly value: string | Literal;
+  readonly libraryName: string | Literal;
+  readonly replacingCopyOperands: CopyOperand[];
+  readonly byCopyOperands: CopyOperand[];
+  constructor(
+    info: NodeStandardInfo,
+    value: string | Literal,
+    libraryName: string | Literal,
+    replacingCopyOperands: CopyOperand[],
+    byCopyOperands: CopyOperand[],
+  ) {
+    super(info);
+    this.type = Syntax.CopyStatement;
+    this.value = value;
+    this.libraryName = libraryName;
+    this.replacingCopyOperands = replacingCopyOperands;
+    this.byCopyOperands = byCopyOperands;
+  }
+}
+
+export class CopyOperand extends Node {
+  readonly value: string | QuotedPseudoText | Identifier | Literal;
+  constructor(info: NodeStandardInfo, value: string | QuotedPseudoText | Identifier | Literal) {
+    super(info);
+    this.type = Syntax.CopyOperand;
+    this.value = value;
+  }
+}
+
+export class DeleteCompilerDirectingStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.DeleteCompilerDirectingStatement;
+  }
+}
+
+export class EjectStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.ReadyOrResetTraceStatement;
+  }
+}
+
+export class EnterStatement extends Node {
+  readonly languageName: string;
+  readonly routineName: string;
+  constructor(info: NodeStandardInfo, languageName: string, routineName: string) {
+    super(info);
+    this.type = Syntax.ReadyOrResetTraceStatement;
+    this.languageName = languageName;
+    this.routineName = routineName;
+  }
+}
+
+export class InsertStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.InsertStatement;
+  }
+}
+
+export class ReadyOrResetTraceStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.ReadyOrResetTraceStatement;
+  }
+}
+
+export class ReplaceStatement extends Node {
+  readonly quotedPseudoText: QuotedPseudoText[];
+  readonly byQuotedPseudoText: QuotedPseudoText[];
+  constructor(info: NodeStandardInfo, quotedPseudoText: QuotedPseudoText[], byQuotedPseudoText: QuotedPseudoText[]) {
+    super(info);
+    this.type = Syntax.ReplaceStatement;
+    this.quotedPseudoText = quotedPseudoText;
+    this.byQuotedPseudoText = byQuotedPseudoText;
+  }
+}
+
+export type ServiceStatement = ServiceLabelStatement | ServiceReloadStatement;
+export class ServiceLabelStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.ServiceLabelStatement;
+  }
+}
+
+export class ServiceReloadStatement extends Node {
+  readonly identifier: Identifier;
+  constructor(info: NodeStandardInfo, identifier: Identifier) {
+    super(info);
+    this.type = Syntax.ServiceReloadStatement;
+    this.identifier = identifier;
+  }
+}
+
+export class SkipStatement extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.SkipStatement;
+  }
+}
+
+export class TitleStatement extends Node {
+  readonly literal: Literal;
+  constructor(info: NodeStandardInfo, literal: Literal) {
+    super(info);
+    this.type = Syntax.TitleStatement;
+    this.literal = literal;
+  }
+}
+
+export type Identifier = QualifiedIdentifier | LinageCounterIdentifier;
+// TODO
+export class QualifiedIdentifier extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+  }
+}
+
+export class LinageCounterIdentifier extends Node {
+  filename: string;
+  constructor(info: NodeStandardInfo, filename: string) {
+    super(info);
+    this.filename = filename;
+    this.type = Syntax.Identifier;
+  }
+}
+
+export class QualifiedDataName extends Node {
+  value: string | SpecialRegister = '';
+  dataNames: string[] = [];
+  constructor(info: NodeStandardInfo, value: string | SpecialRegister, dataNames: string[]) {
+    super(info);
+    this.type = Syntax.QualifiedDataName;
+    this.value = value;
+    this.dataNames = dataNames;
+  }
+}
+
+export class LevelNumber extends Node {
+  value: string = '';
+  dataNames: string[] = [];
+  constructor(info: NodeStandardInfo, value: string) {
+    super(info);
+    this.type = Syntax.LevelNumber;
+    this.value = value;
+  }
+}
+
+export class DataDescriptionEntry extends Node {
+  readonly level: LevelNumber;
+  readonly dataName: string;
+  readonly dataDescriptonEntryClauses: DataDescriptionEntryClause[] | RenamesClause[] | ConditionValueClause[];
+
+  constructor(
+    info: NodeStandardInfo,
+    level: LevelNumber,
+    dataName: string,
+    dataDescriptonEntryClauses: DataDescriptionEntryClause[] | RenamesClause[] | ConditionValueClause[],
+  ) {
+    super(info);
+    this.type = Syntax.DataDescriptionEntry;
+    this.level = level;
+    this.dataName = dataName;
+    this.dataDescriptonEntryClauses = dataDescriptonEntryClauses;
+  }
+}
+
+export type DataDescriptionEntryClause =
+  | RedefinesClause
+  | BlankWhenZeroClause
+  | JustifiedClause
+  | ExternalClause
+  | GlobalClause
+  | OccursClause
+  | PictureClause
+  | SignClause
+  | SyncronizedClause
+  | UsageClause
+  | ConditionValueClause
+  | DataValueClause
+  | RenamesClause;
+
+export class RedefinesClause extends Node {
+  readonly dataName: string;
+
+  constructor(info: NodeStandardInfo, dataName: string) {
+    super(info);
+    this.type = Syntax.RedefinesClause;
+    this.dataName = dataName;
+  }
+}
+
+export class BlankWhenZeroClause extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.BlankWhenZeroClause;
+  }
+}
+
+export class GlobalClause extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.GlobalClause;
+  }
+}
+
+export class ExternalClause extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.ExternalClause;
+  }
+}
+
+export class JustifiedClause extends Node {
+  constructor(info: NodeStandardInfo) {
+    super(info);
+    this.type = Syntax.JustifiedClause;
+  }
+}
+
+export interface OccursKey {
+  orderType: string;
+  keys: QualifiedDataName[];
+}
+
+export class OccursClause extends Node {
+  readonly occursValue: string;
+  readonly occursToValue: string;
+  readonly occursKeys: OccursKey[];
+  readonly dependingOnQualifiedDataName: QualifiedDataName | null;
+  readonly indexNames: string[];
+  constructor(
+    info: NodeStandardInfo,
+    occursValue: string,
+    occursToValue: string,
+    dependingOnQualifiedDataName: QualifiedDataName | null,
+    occursKeys: OccursKey[],
+    indexNames: string[],
+  ) {
+    super(info);
+    this.type = Syntax.OccursClause;
+    this.occursValue = occursValue;
+    this.occursToValue = occursToValue;
+    this.dependingOnQualifiedDataName = dependingOnQualifiedDataName;
+    this.occursKeys = occursKeys;
+    this.indexNames = indexNames;
+  }
+}
+
+export class PictureClause extends Node {
+  readonly pictureString: PictureString;
+  constructor(info: NodeStandardInfo, pictureString: PictureString) {
+    super(info);
+    this.type = Syntax.PictureClause;
+    this.pictureString = pictureString;
+  }
+}
+
+export class PictureString extends Node {
+  readonly currency: string;
+  readonly picChar: string[];
+  readonly value: string[];
+  readonly punctuation: string[];
+
+  constructor(info: NodeStandardInfo, currency: string, picChar: string[], value: string[], punctuation: string[]) {
+    super(info);
+    this.type = Syntax.PictureString;
+    this.currency = currency;
+    this.picChar = picChar;
+    this.value = value;
+    this.punctuation = punctuation;
+  }
+}
+
+export class SignClause extends Node {
+  readonly value: string;
+  constructor(info: NodeStandardInfo, value: string) {
+    super(info);
+    this.type = Syntax.SignClause;
+    this.value = value;
+  }
+}
+
+export class SyncronizedClause extends Node {
+  readonly value: string;
+  constructor(info: NodeStandardInfo, value: string) {
+    super(info);
+    this.type = Syntax.SyncronizedClause;
+    this.value = value;
+  }
+}
+
+export class UsageClause extends Node {
+  readonly value: string;
+  constructor(info: NodeStandardInfo, value: string) {
+    super(info);
+    this.type = Syntax.UsageClause;
+    this.value = value;
+  }
+}
+
+export class DataValueClause extends Node {
+  readonly value: Literal;
+
+  constructor(info: NodeStandardInfo, value: Literal) {
+    super(info);
+    this.type = Syntax.DataValueClause;
+    this.value = value;
+  }
+}
+
+export class RenamesClause extends Node {
+  readonly renamesQualifiedDataName: QualifiedDataName;
+  readonly throughQualifiedDataName: QualifiedDataName | null;
+
+  constructor(
+    info: NodeStandardInfo,
+    renamesQualifiedDataName: QualifiedDataName,
+    throughQualifiedDataName: QualifiedDataName | null,
+  ) {
+    super(info);
+    this.type = Syntax.RenamesClause;
+    this.renamesQualifiedDataName = renamesQualifiedDataName;
+    this.throughQualifiedDataName = throughQualifiedDataName;
+  }
+}
+
+export class ConditionValueClause extends Node {
+  readonly valueLiterals: Literal[];
+  readonly throughLiterals: Literal[];
+
+  constructor(info: NodeStandardInfo, valueLiterals: Literal[], throughLiterals: Literal[]) {
+    super(info);
+    this.type = Syntax.ConditionValueClause;
+    this.valueLiterals = valueLiterals;
+    this.throughLiterals = throughLiterals;
+  }
+}
+
+export class AlphabetLiteral {
   literal: string = '';
   throughLiteral: string = '';
   alsoLiteral: string = '';
@@ -468,14 +857,23 @@ export class Literal {
 
 // export type ConfigurationSectionParagraph = SourceComputerParagraph | ObjectComputerParagraph | SpecialNamesParagraph;
 // export type FileAndSortDescriptionEntryClauses = ExternalClause | GlobalClause | BlockContainsClause | RecordClause | LabelRecordsClause | ValueOfClause | DataRecordsClause | LinageClause | RecordingModeClause | CodeSetClause;
-// export type DataDescriptionEntryClauses = RedefinesClause | BlankWhenZeroClause | JustifiedClause | OccursClause | PictureClause | SignClause | SyncronizedClause | UsageClause | ConditionValueClause | DataValueClause | RenamesClause;
 // export type Sections = Paragraphs;
 // export type Paragraphs = Sentence | Paragraph;
 // export type Statement = AcceptStatement | AddStatement | AlterStatement | CallStatement | CancelStatement | CloseStatement | ComputeStatement | ContinueStatement | DeleteStatement | DisplayStatement | DivideStatement | EntryStatement
 //     | EvaluateStatement | ExitStatement | ExitProgramStatement | GoBackStatement | GoToStatement | AlteredGoToStatement | IfStatement | InitializeStatement | InspectStatement | MergeStatement | MoveStatement | MultiplyStatement | OpenStatement
 //     | PerformStatement | PerformUntilStatement | PerformVaryingStatement | PerformAfterStatement | ReadStatement | ReleaseStatement | ReturnStatement | RewriteStatement | SearchStatement | SetStatement | SortStatement | StartStatement | StopStatement
 //     | StringStatement | SubtractStatement | UnstringStatement | WriteStatement;
-// export type CompilerDirectingStatement = BasisStatement | CblProcessStatement | ControlCblStatement | CopyStatement | DeleteCompilerDirectingStatement | EjectStatement | EnterStatement | InsertStatement | ReadyOrResetTraceStatement | ReplaceStatement
+export type CompilerDirectingStatement =
+  | BasisStatement
+  | CblProcessStatement
+  | ControlCblStatement
+  | CopyStatement
+  | DeleteCompilerDirectingStatement
+  | EjectStatement
+  | EnterStatement
+  | InsertStatement
+  | ReadyOrResetTraceStatement
+  | ReplaceStatement;
 //     | ServiceLabelStatement | ServiceReloadStatement | SkipStatement | TitleStatement | UseStatement;
 // export type SimpleCondition = ClassCondition | ConditionNameCondition | RelationCondition | SignCondition | SwitchStatusCondition | NegatedSimpleCondition;
 // export type Name = AlphabetName | ClassName | ConditionName | FileName | IndexName | MnemonicName | RecordName | RoutineName | SymbolicCharacter | LibraryName | ProgramName | TextName | ParagraphName | SectionName | ComputerName | LanguageName | EnvironmentName
