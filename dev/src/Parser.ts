@@ -2856,18 +2856,25 @@ export class Parser {
   private parsePictureString(): Nodes.PictureString {
     const startNodeInfo = this.startNode(this.currentToken);
 
-    const currency: string = '';
-    const picChar: string[] = [];
-    const value: string[] = [];
-    const punctuation: string[] = [];
+    const pictureValues: Nodes.PictureValue[] = [];
 
-    picChar.push(this.currentToken.value);
-    this.nextToken();
+    while (this.isOptionalIdentifier()) {
+      const value: string = this.currentToken.value;
+      let length: number = this.currentToken.value.length;
+      this.nextToken();
 
-    return this.finalizeNode(
-      new Nodes.PictureString(startNodeInfo, currency, picChar, value, punctuation),
-      this.currentToken,
-    );
+      if (this.currentToken.type === TokenType.Bracket) {
+        this.nextToken();
+        this.expectNumeric();
+        length = parseInt(this.currentToken.value, 10);
+        this.nextToken();
+        // Closing Bracket
+        this.nextToken();
+      }
+      pictureValues.push({ value: value, length: length });
+    }
+
+    return this.finalizeNode(new Nodes.PictureString(startNodeInfo, pictureValues), this.currentToken);
   }
 
   private isPictureClause(): boolean {

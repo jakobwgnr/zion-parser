@@ -16,6 +16,11 @@ test('SyncronizedClause Data Description entry - should parse without errors', (
 
   expect(
     ((ast.nodes[0] as Nodes.DataDescriptionEntry).dataDescriptonEntryClauses[0] as Nodes.PictureClause).pictureString
-      .picChar[0],
+      .picValues[0].value,
   ).toBe('XXX');
+
+  expect(
+    ((ast.nodes[0] as Nodes.DataDescriptionEntry).dataDescriptonEntryClauses[0] as Nodes.PictureClause).pictureString
+      .picValues[0].length,
+  ).toBe(3);
 });

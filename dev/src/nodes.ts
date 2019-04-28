@@ -768,19 +768,17 @@ export class PictureClause extends Node {
   }
 }
 
+export interface PictureValue {
+  value: string;
+  length: number;
+}
 export class PictureString extends Node {
-  readonly currency: string;
-  readonly picChar: string[];
-  readonly value: string[];
-  readonly punctuation: string[];
+  readonly picValues: PictureValue[];
 
-  constructor(info: NodeStandardInfo, currency: string, picChar: string[], value: string[], punctuation: string[]) {
+  constructor(info: NodeStandardInfo, picValues: PictureValue[]) {
     super(info);
     this.type = Syntax.PictureString;
-    this.currency = currency;
-    this.picChar = picChar;
-    this.value = value;
-    this.punctuation = punctuation;
+    this.picValues = picValues;
   }
 }
 
