@@ -7,7 +7,7 @@
 // Requirements
 // ------------------------------------------------------------------------------
 require('debug').enable('zion-parser:*,-zion-parser:code-path');
-import { fscheck } from './util/fscheck';
+import { fscheck } from 'zion-commons';
 
 import * as zionLexer from 'zion-lexer';
 
