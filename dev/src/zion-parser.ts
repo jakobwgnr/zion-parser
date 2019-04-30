@@ -49,3 +49,4 @@ export function parse(input: string, options?: any): Ast {
 
 export { Ast } from './Ast';
 export * from './nodes';
+export { Syntax } from './syntax';
