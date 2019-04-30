@@ -1,6 +1,6 @@
 {
   "name": "zion-parser",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A parser/Lexer for COBOL creating an AST",
   "main": "./dist/zion-parser.js",
   "types": "./dist/zion-parser.d.js",
