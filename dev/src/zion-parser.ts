@@ -46,3 +46,6 @@ export function parse(input: string, options?: any): Ast {
   const ast: Ast = new Ast(nodes, parser.tokens, parser.errorHandler.errors);
   return ast;
 }
+
+export { Ast } from './Ast';
+export * from './nodes';
